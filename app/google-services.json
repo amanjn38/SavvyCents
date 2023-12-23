@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "247322538424",
+    "firebase_url": "https://savvycents-a33f8-default-rtdb.firebaseio.com",
+    "project_id": "savvycents-a33f8",
+    "storage_bucket": "savvycents-a33f8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:247322538424:android:7b79cc47111c4d1de45f4d",
+        "android_client_info": {
+          "package_name": "com.finance.savvycents"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "247322538424-j3nrkc3ekoocpjtrrsfakodohhdcqk1h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.finance.savvycents",
+            "certificate_hash": "ba2c45dd774f615c0c4ff2f02bfe7f4b9823d328"
+          }
+        },
+        {
+          "client_id": "247322538424-2rabqbgrl125l0d1anaalctpatcrnifo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzqHmCL-KcuWAk6qRvB2xBUWoU575qZNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "247322538424-2rabqbgrl125l0d1anaalctpatcrnifo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
