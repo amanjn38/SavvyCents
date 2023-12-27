@@ -18,10 +18,10 @@ class HomeActivity : AppCompatActivity() {
 
         binding.bottomNavigationView.background = null
         binding.bottomNavigationView.menu.getItem(2).isEnabled = false
-        replaceFragment(Home2Fragment())
+        replaceFragment(HomeFragment())
         binding.bottomNavigationView.setOnItemSelectedListener {
             when(it.itemId){
-                R.id.home -> replaceFragment(Home2Fragment())
+                R.id.home -> replaceFragment(HomeFragment())
                 R.id.analytics -> replaceFragment(AnalyticsFragment())
                 R.id.cards -> replaceFragment(CardAndAccountFragment())
                 R.id.profile -> replaceFragment(ProfileFragment())

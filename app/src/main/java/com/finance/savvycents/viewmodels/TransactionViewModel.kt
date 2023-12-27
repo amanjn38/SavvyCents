@@ -7,10 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.finance.savvycents.models.Transaction
 import com.finance.savvycents.repository.TransactionRepository
 import com.finance.savvycents.utilities.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class TransactionViewModel(private val repository: TransactionRepository) : ViewModel() {
+@HiltViewModel
+class TransactionViewModel @Inject constructor(private val repository: TransactionRepository) : ViewModel() {
 
     private val _addTransactionStatus = MutableLiveData<Resource<Unit>>()
     val addTransactionStatus: LiveData<Resource<Unit>> get() = _addTransactionStatus

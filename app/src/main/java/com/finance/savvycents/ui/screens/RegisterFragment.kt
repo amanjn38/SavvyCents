@@ -2,6 +2,7 @@ package com.finance.savvycents.ui.screens
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -32,6 +33,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.tasks.await
+
 @AndroidEntryPoint
 class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
@@ -41,11 +43,10 @@ class RegisterFragment : Fragment() {
     private lateinit var signInRequest: BeginSignInRequest
     private lateinit var auth: FirebaseAuth
     private var isLoading = false
-    private var loggedInUsingGoogle = false
-    private lateinit var name:String
-    private lateinit var email:String
-    private lateinit var phone:String
-    private lateinit var password:String
+    private lateinit var name: String
+    private lateinit var email: String
+    private lateinit var phone: String
+    private lateinit var password: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +57,11 @@ class RegisterFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = com.finance.savvycents.databinding.FragmentRegisterBinding.inflate(inflater, container, false)
+        _binding = com.finance.savvycents.databinding.FragmentRegisterBinding.inflate(
+            inflater,
+            container,
+            false
+        )
         return binding.root
     }
 
@@ -64,118 +69,135 @@ class RegisterFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btSignup.setOnClickListener() {
-            if (loggedInUsingGoogle) {
+//            if (loggedInUsingGoogle) {
+//
+//                val name = binding.etName.text.toString()
+//                val email = binding.etEmail.text.toString()
+//                val phone = binding.etPhone.text.toString()
+//                val validName = viewModel.validateName(name)
+//
+//                if (validName is Validator.Error) {
+//                    Toast.makeText(context, validName.errorMsg, Toast.LENGTH_SHORT).show()
+//                    return@setOnClickListener
+//                }
+//
+//                val validEmail = viewModel.validateEmail(email)
+//
+//                if (validEmail is Validator.Error) {
+//                    Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
+//                    return@setOnClickListener
+//                }
+//
+//                val validPhone = viewModel.validatePhone(phone)
+//
+//                if (validPhone is Validator.Error) {
+//                    Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
+//                    return@setOnClickListener
+//                }
+//
+//                viewModel.saveLoginCredential(
+//                    User(
+//                        isLoggedIn = true,
+//                        email = email,
+//                        userId = auth.currentUser!!.uid,
+//                        name = name,
+//                        phone = phone
+//                    )
+//                )
+//
+//                saveUserData(name, email, phone)
+////                findNavController().navigate(R.id.action_registerFragment_to_homeFragment)
+//                val intent = Intent(activity, HomeActivity::class.java)
+//                startActivity(intent)
+//            } else {
+            name = binding.etName.text.toString()
+            email = binding.etEmail.text.toString()
+            password = binding.etPassword.text.toString()
+            val confirmPassword = binding.etConfirmPassword.text.toString()
+            phone = binding.etPhone.text.toString()
+            val context = requireContext()
 
-                val name = binding.etName.text.toString()
-                val email = binding.etEmail.text.toString()
-                val phone = binding.etPhone.text.toString()
-                val validName = viewModel.validateName(name)
+            val validName = viewModel.validateName(name)
 
-                if (validName is Validator.Error) {
-                    Toast.makeText(context, validName.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
+            if (validName is Validator.Error) {
+                Toast.makeText(context, validName.errorMsg, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                val validEmail = viewModel.validateEmail(email)
+            val validEmail = viewModel.validateEmail(email)
 
-                if (validEmail is Validator.Error) {
-                    Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
+            if (validEmail is Validator.Error) {
+                Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                val validPhone = viewModel.validatePhone(phone)
+            val validPas = viewModel.validatePassword(password)
 
-                if (validPhone is Validator.Error) {
-                    Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
+            if (validPas is Validator.Error) {
+                Toast.makeText(context, validPas.errorMsg, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                viewModel.saveLoginCredential(
-                    User(
-                        isLoggedIn = true,
-                        email = email,
-                        userId = auth.currentUser!!.uid,
-                        name = name,
-                        phone = phone
-                    )
-                )
+            val validConfirmPassword =
+                viewModel.validateConfirmPassword(password, confirmPassword)
 
-                saveUserData(name, email, phone)
-                findNavController().navigate(R.id.action_registerFragment_to_homeFragment)
+            if (validConfirmPassword is Validator.Error) {
+                Toast.makeText(context, validConfirmPassword.errorMsg, Toast.LENGTH_SHORT)
+                    .show()
+                return@setOnClickListener
+            }
 
-            } else {
-                name = binding.etName.text.toString()
-                email = binding.etEmail.text.toString()
-                password = binding.etPassword.text.toString()
-                val confirmPassword = binding.etConfirmPassword.text.toString()
-                phone = binding.etPhone.text.toString()
-                val context = requireContext()
+            val validPhone = viewModel.validatePhone(phone)
 
-                val validName = viewModel.validateName(name)
+            if (validPhone is Validator.Error) {
+                Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                if (validName is Validator.Error) {
-                    Toast.makeText(context, validName.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
 
-                val validEmail = viewModel.validateEmail(email)
-
-                if (validEmail is Validator.Error) {
-                    Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-
-                val validPas = viewModel.validatePassword(password)
-
-                if (validPas is Validator.Error) {
-                    Toast.makeText(context, validPas.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-
-                val validConfirmPassword =
-                    viewModel.validateConfirmPassword(password, confirmPassword)
-
-                if (validConfirmPassword is Validator.Error) {
-                    Toast.makeText(context, validConfirmPassword.errorMsg, Toast.LENGTH_SHORT)
-                        .show()
-                    return@setOnClickListener
-                }
-
-                val validPhone = viewModel.validatePhone(phone)
-
-                if (validPhone is Validator.Error) {
-                    Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                viewModel.sendOtp(phone)
+//            viewModel.sendOtp(phone)
 
 //                viewModel.signupUser(name, email, password)
-
-            }
+            val action = RegisterFragmentDirections.actionRegisterFragmentToOtpFragment(
+                email,
+                name,
+                phone,
+                password
+            )
+            findNavController().navigate(action)
+//            }
         }
 
-        viewModel.sendOtpStatus.observe(viewLifecycleOwner, Observer { result ->
-            when (result) {
-                is Resource.Success -> {
-                    hideLoadingIndicator()
-                   Toast.makeText(requireActivity(), "OTP send Successfully", Toast.LENGTH_SHORT).show()
-                    val action = RegisterFragmentDirections.actionRegisterFragmentToOtpFragment(
-                        email,
-                        name,
-                        phone,
-                        password
-                    )
-                    findNavController().navigate(action)
-                }
-                is Resource.Error -> {
-                    Toast.makeText(requireActivity(), "OTP not send, please check the phone number", Toast.LENGTH_SHORT).show()
-
-                }
-                is Resource.Loading -> {
-                   showLoadingIndicator()
-                }
-            }
-        })
+//        viewModel.sendOtpStatus.observe(viewLifecycleOwner, Observer { result ->
+//            when (result) {
+//                is Resource.Success -> {
+//                    hideLoadingIndicator()
+//                    Toast.makeText(requireActivity(), "OTP send Successfully", Toast.LENGTH_SHORT)
+//                        .show()
+//                    val action = RegisterFragmentDirections.actionRegisterFragmentToOtpFragment(
+//                        email,
+//                        name,
+//                        phone,
+//                        password
+//                    )
+//                    findNavController().navigate(action)
+//                }
+//
+//                is Resource.Error -> {
+//                    hideLoadingIndicator()
+//                    Toast.makeText(
+//                        requireActivity(),
+//                        "OTP not send, please check the phone number",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//
+//                }
+//
+//                is Resource.Loading -> {
+//                    showLoadingIndicator()
+//                }
+//            }
+//        })
 
         auth = Firebase.auth
         oneTapClient = Identity.getSignInClient(requireContext())
@@ -222,15 +244,11 @@ class RegisterFragment : Fragment() {
                                             "User created: ${user?.email}",
                                             Toast.LENGTH_LONG
                                         ).show()
-//                                        findNavController().navigate(R.id.action_registerFragment_to_homeFragment)
-                                        loggedInUsingGoogle = true
-                                        binding.etEmail.setText(user?.email)
-                                        binding.etEmail.isClickable = false
-                                        binding.etEmail.alpha = 0.5f
-                                        binding.etEmail.isInEditMode
-                                        binding.etPassword.visibility = View.GONE
-                                        binding.etConfirmPassword.visibility = View.GONE
-                                        binding.etEmail.isEnabled = false
+                                        hideLoadingIndicator()
+                                        showSuccessFeedback()
+                                        saveUserData(user?.displayName!!, user.email!!, "")
+                                        val intent = Intent(activity, HomeActivity::class.java)
+                                        startActivity(intent)
                                     } else {
                                         Toast.makeText(
                                             context,
@@ -257,6 +275,7 @@ class RegisterFragment : Fragment() {
         }
 
         binding.signupGoogle.setOnClickListener {
+            showLoadingIndicator()
             oneTapClient.beginSignIn(signInRequest)
                 .addOnSuccessListener(requireActivity()) { result ->
                     try {
@@ -274,9 +293,11 @@ class RegisterFragment : Fragment() {
                 }
         }
         binding.tvSkip.setOnClickListener {
-            val action =
-                RegisterFragmentDirections.actionRegisterFragmentToHomeFragment()
-            findNavController().navigate(action)
+//            val action =
+//                RegisterFragmentDirections.actionRegisterFragmentToHomeFragment()
+//            findNavController().navigate(action)
+            val intent = Intent(activity, HomeActivity::class.java)
+            startActivity(intent)
         }
 
         binding.tvAlreadyHaveAnAccount.setOnClickListener {
@@ -294,7 +315,7 @@ class RegisterFragment : Fragment() {
     private fun saveUserData(name: String, email: String, phone: String) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
-            val user = User(true, email, userId, name, phone)
+            val user = User(true, userId, email, name, phone)
             val databaseReference = FirebaseDatabase.getInstance().getReference("users")
             databaseReference.child(userId).setValue(user)
                 .addOnSuccessListener {

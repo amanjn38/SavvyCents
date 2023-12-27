@@ -2,6 +2,7 @@ package com.finance.savvycents.ui.screens
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -19,6 +20,7 @@ import com.finance.savvycents.databinding.FragmentLoginBinding
 import com.finance.savvycents.models.User
 import com.finance.savvycents.utilities.Resource
 import com.finance.savvycents.utilities.Validator
+import com.finance.savvycents.utilities.saveUserData
 import com.finance.savvycents.viewmodels.LoginViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
@@ -65,7 +67,14 @@ class LoginFragment : Fragment() {
         }
 
         binding.tvDontHaveAnAccount.setOnClickListener {
-            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
+//            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
+            val action = LoginFragmentDirections.actionLoginFragmentToOtpFragment(
+                "amanjn38@gmail.com",
+                "Aman Jain",
+                "+917310919162",
+                "123456@aA"
+            )
+            findNavController().navigate(action)
         }
 
         binding.btLogin.setOnClickListener {
@@ -154,6 +163,7 @@ class LoginFragment : Fragment() {
 
 
         binding.signupGoogle.setOnClickListener {
+            showLoadingIndicator()
             oneTapClient.beginSignIn(signInRequest)
                 .addOnSuccessListener(requireActivity()) { result ->
                     try {
@@ -177,8 +187,10 @@ class LoginFragment : Fragment() {
         }
 
         binding.tvSkip.setOnClickListener {
-            val action = LoginFragmentDirections.actionLoginFragmentToHomeFragment()
-            findNavController().navigate(action)
+//            val action = LoginFragmentDirections.actionLoginFragmentToHomeFragment()
+//            findNavController().navigate(action)
+            val intent = Intent(activity, HomeActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -189,25 +201,29 @@ class LoginFragment : Fragment() {
             auth.signInWithCredential(authCredential)
                 .addOnCompleteListener(requireActivity()) { authTask ->
                     if (authTask.isSuccessful) {
-
+                        hideLoadingIndicator()
                         auth.currentUser?.let { user ->
 
                             viewModel.saveLoginCredential(
                                 User(
                                     isLoggedIn = true,
-                                    email = user.email,
                                     userId = user.uid,
+                                    email = user.email,
                                     name = user.displayName!!,
-                                    phone = "123"
+                                    phone = ""
 
                                 )
                             )
-
+                            saveUserData(requireContext(), user.displayName!!, user.email!!, "")
                         }
 
                         showSuccessFeedback()
-                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+//                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+
+                        val intent = Intent(activity, HomeActivity::class.java)
+                        startActivity(intent)
                     } else {
+
                         Toast.makeText(
                             context,
                             "Error creating user: ${authTask.exception?.message}",
@@ -241,7 +257,10 @@ class LoginFragment : Fragment() {
 
                     }
                     showSuccessFeedback()
-                    findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+//                    findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+
+                    val intent = Intent(activity, HomeActivity::class.java)
+                    startActivity(intent)
                 } else {
                     Toast.makeText(
                         context,
@@ -331,8 +350,11 @@ class LoginFragment : Fragment() {
                             )
 
                             showSuccessFeedback()
-                            findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+//                            findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+                            val intent = Intent(activity, HomeActivity::class.java)
+                            startActivity(intent)
                         }
+
                     }
                 }
             }

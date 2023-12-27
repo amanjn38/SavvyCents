@@ -3,6 +3,7 @@ package com.finance.savvycents.ui.screens
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -91,7 +92,9 @@ class ProfileFragment : Fragment() {
                 sharedPreferences.edit().remove("remember_me").apply()
             }
             viewModel.logout()
-            findNavController().navigate(R.id.action_profileFragment_to_loginFragment)
+//            findNavController().navigate(R.id.action_profileFragment_to_loginFragment)
+            val intent = Intent(activity, MainActivity::class.java)
+            startActivity(intent)
             Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()
         }
 

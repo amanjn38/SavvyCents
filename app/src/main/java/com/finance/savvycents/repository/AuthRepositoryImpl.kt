@@ -2,6 +2,7 @@ package com.finance.savvycents.repository
 
 import android.app.Activity
 import android.content.Context
+import android.widget.Toast
 import com.finance.savvycents.SavvyCentsApp
 import com.finance.savvycents.utilities.PhoneAuthCallbacks
 import com.finance.savvycents.utilities.PhoneAuthState
@@ -22,7 +23,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class AuthRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val context : Context
+    private val context: Context
 ) : AuthRepository {
     override val currentUser: FirebaseUser?
         get() = firebaseAuth.currentUser
@@ -41,16 +42,38 @@ class AuthRepositoryImpl @Inject constructor(
         name: String,
         email: String,
         password: String,
-        phone: String
+        phone: String,
+        user: FirebaseUser
     ): Resource<FirebaseUser> {
+
         return try {
-            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            result?.user?.updateProfile(
-                UserProfileChangeRequest.Builder().setDisplayName(name).build()
-            )?.await()
-            sendOtp(phone)
-            Resource.Success(result.user!!)
+//            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+//            val user = firebaseAuth.currentUser
+//            System.out.println("testingLinking1" + user)
+//            System.out.println("testingLinking5" + result)
+
+//            result?.user?.updateProfile(
+//                UserProfileChangeRequest.Builder().setDisplayName(name).build()
+//            )?.await()
+            val emailCredential = EmailAuthProvider.getCredential(email, password)
+
+            user.linkWithCredential(emailCredential).addOnCompleteListener { task ->
+
+                if(task.isSuccessful){
+                    System.out.println("testingLinking2" + "working")
+                }else if (task.isCanceled){
+                    System.out.println("testingLinking3" + "notworking")
+                }else if(task.isComplete){
+                    System.out.println("testingLinking6" + "completed")
+                }else{
+                    val message = task.exception
+                    System.out.println("testingLinking4" + message)
+                }
+            }
+
+            Resource.Success(user)
         } catch (e: Exception) {
+            System.out.println("testingLinking9" + e.message)
             e.printStackTrace()
             Resource.Error(e.message)
         }
@@ -95,50 +118,4 @@ class AuthRepositoryImpl @Inject constructor(
 
         firebaseAuth.signOut()
     }
-
-    override suspend fun sendOtp(phoneNumber: String): Resource<PhoneAuthState> {
-        return try {
-            lateinit var verificationId: String
-            lateinit var token: PhoneAuthProvider.ForceResendingToken
-            val options = PhoneAuthOptions.newBuilder(firebaseAuth)
-                .setPhoneNumber(phoneNumber)
-                .setTimeout(60L, TimeUnit.SECONDS)
-                .setActivity(context as Activity)
-                .setCallbacks(
-                    PhoneAuthCallbacks { state ->
-                        when (state) {
-                            is PhoneAuthState.CodeSent -> {
-                                verificationId = state.verificationId
-                                token = state.token
-                            }
-                            // Handle other states if needed
-                            is PhoneAuthState.VerificationCompleted -> TODO()
-                            is PhoneAuthState.VerificationFailed -> TODO()
-                        }
-                    }
-                )
-                .build()
-
-            PhoneAuthProvider.verifyPhoneNumber(options)
-            Resource.Success(PhoneAuthState.CodeSent(verificationId, token))
-        } catch (e: Exception) {
-            Resource.Error(e.message)
-        }
-    }
-
-    override suspend fun verifyOtp(verificationId: String, otp: String): Resource<FirebaseUser> {
-        return try {
-            val credential = PhoneAuthProvider.getCredential(verificationId, otp)
-            firebaseAuth.signInWithCredential(credential).await()
-            val currentUser = firebaseAuth.currentUser
-            if (currentUser != null) {
-                Resource.Success(currentUser)
-            } else {
-                Resource.Error("Verification failed")
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.message)
-        }
-    }
-
 }

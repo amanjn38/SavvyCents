@@ -60,9 +60,9 @@ class LoginViewModel @Inject constructor(
         _loginFlow.value = result
     }
 
-    fun signupUser(name: String, email: String, password: String) = viewModelScope.launch {
+    fun signupUser(name: String, email: String, password: String, phoneNumber: String, user: FirebaseUser) = viewModelScope.launch {
         _signUpFlow.value = Resource.Loading()
-        val result = repository.signup(name, email, password,"123")
+        val result = repository.signup(name, email, password, phoneNumber, user)
         _signUpFlow.value = result
     }
 
@@ -147,53 +147,4 @@ class LoginViewModel @Inject constructor(
     fun saveLoginCredential(user: User) {
         preferenceHelper.saveLoginCredential(user)
     }
-
-    fun sendOtp(phoneNumber: String) = viewModelScope.launch {
-        _sendOtpStatus.value = Resource.Loading()
-        val result = repository.sendOtp(phoneNumber)
-        if (result is Resource.Success) {
-            when (val state = result.data) {
-                is PhoneAuthState.CodeSent -> {
-                    // Handle the case where the verification code is sent successfully
-                    currentVerificationId = state.verificationId
-                }
-
-                is PhoneAuthState.VerificationCompleted -> {
-                    // Handle the case where verification is completed automatically
-                    // You may choose to sign in the user or perform other actions
-                    // For example: viewModel.signInWithPhoneAuthCredential(state.credential)
-                }
-
-                is PhoneAuthState.VerificationFailed -> {
-                    // Handle the case where verification fails
-                    // You can display an error message or take appropriate actions
-                }
-
-                null -> {
-                    // Handle the case where the state is null (unexpected)
-                    // You may choose to log an error or take appropriate actions
-                }
-            }
-        }
-        _sendOtpStatus.value = result
-    }
-
-    fun verifyOtpWithCode(verificationCode: String) = viewModelScope.launch {
-        _verifyOtpStatus.value = Resource.Loading()
-        if (currentVerificationId != null) {
-            val result = repository.verifyOtp(currentVerificationId!!, verificationCode)
-            _verifyOtpStatus.value = result
-        } else {
-            // Handle the case where verificationId is null
-            _verifyOtpStatus.value = Resource.Error("Verification failed: VerificationId is null.")
-        }
-    }
-
-
-    fun verifyOtp(verificationId: String, otp: String) = viewModelScope.launch {
-        _verifyOtpStatus.value = Resource.Loading()
-        val result = repository.verifyOtp(verificationId, otp)
-        _verifyOtpStatus.value = result
-    }
-
 }
