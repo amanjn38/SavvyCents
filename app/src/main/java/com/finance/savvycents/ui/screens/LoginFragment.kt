@@ -1,7 +1,6 @@
 package com.finance.savvycents.ui.screens
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -20,6 +19,7 @@ import com.finance.savvycents.databinding.FragmentLoginBinding
 import com.finance.savvycents.models.User
 import com.finance.savvycents.utilities.Resource
 import com.finance.savvycents.utilities.Validator
+import com.finance.savvycents.utilities.isUserLoggedIn
 import com.finance.savvycents.utilities.saveUserData
 import com.finance.savvycents.viewmodels.LoginViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
@@ -32,7 +32,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
@@ -51,7 +50,7 @@ class LoginFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -67,44 +66,42 @@ class LoginFragment : Fragment() {
         }
 
         binding.tvDontHaveAnAccount.setOnClickListener {
-//            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
-            val action = LoginFragmentDirections.actionLoginFragmentToOtpFragment(
-                "amanjn38@gmail.com",
-                "Aman Jain",
-                "+917310919162",
-                "123456@aA"
-            )
-            findNavController().navigate(action)
+            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
 
         binding.btLogin.setOnClickListener {
 
-            val email = binding.etEmail.text.toString()
-            val password = binding.etPassword.text.toString()
+            val inputText = binding.etEmail.text.toString()
+            if (isEmail(inputText)) {
+                val validEmail = viewModel.validateEmail(inputText)
 
-            val validEmail = viewModel.validateEmail(email)
+                if (validEmail is Validator.Error) {
+                    Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                val action = LoginFragmentDirections.actionLoginFragmentToOtpFragment(
+                    inputText,
+                    "email",
+                    "loginFragment"
+                )
+                findNavController().navigate(action)
 
-            if (validEmail is Validator.Error) {
-                Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            } else if (isPhoneNumber(inputText)) {
+                val validPhone = viewModel.validatePhone(inputText)
+
+                if (validPhone is Validator.Error) {
+                    Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                val action = LoginFragmentDirections.actionLoginFragmentToOtpFragment(
+                    inputText,
+                    "phone",
+                    "loginFragment"
+                )
+                findNavController().navigate(action)
             }
-
-            val validPas = viewModel.validatePassword(password)
-
-            if (validPas is Validator.Error) {
-                Toast.makeText(context, validPas.errorMsg, Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-//            if (binding.cbRememberMe.isChecked) {
-//                val sharedPreferences =
-//                    requireContext().getSharedPreferences("RememberLogin", Context.MODE_PRIVATE)
-//                sharedPreferences.edit().putBoolean("remember_me", true).apply()
-//            }
-
-            viewModel.loginUser(email, password)
-
         }
+
         oneTapClient = Identity.getSignInClient(requireContext())
 
         signInRequest = BeginSignInRequest.builder()
@@ -185,13 +182,6 @@ class LoginFragment : Fragment() {
         binding.tvForgotPass.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
         }
-
-        binding.tvSkip.setOnClickListener {
-//            val action = LoginFragmentDirections.actionLoginFragmentToHomeFragment()
-//            findNavController().navigate(action)
-            val intent = Intent(activity, HomeActivity::class.java)
-            startActivity(intent)
-        }
     }
 
     private fun createUserWithGoogleCredential(credential: SignInCredential) {
@@ -218,8 +208,6 @@ class LoginFragment : Fragment() {
                         }
 
                         showSuccessFeedback()
-//                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
-
                         val intent = Intent(activity, HomeActivity::class.java)
                         startActivity(intent)
                     } else {
@@ -257,8 +245,6 @@ class LoginFragment : Fragment() {
 
                     }
                     showSuccessFeedback()
-//                    findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
-
                     val intent = Intent(activity, HomeActivity::class.java)
                     startActivity(intent)
                 } else {
@@ -297,67 +283,60 @@ class LoginFragment : Fragment() {
         Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
     }
 
-    private suspend fun sendEmailVerification() {
-        val currentUser = auth.currentUser
-        currentUser?.sendEmailVerification()?.await()
-    }
-
-    private fun storeDataInSharedPreferences() {
-        if (binding.cbRememberMe.isChecked) {
-            val sharedPreferences =
-                requireContext().getSharedPreferences(
-                    "RememberLogin",
-                    Context.MODE_PRIVATE
-                )
-            sharedPreferences.edit()
-                .putBoolean("remember_me", true)
-                .apply()
-        }
-
-    }
-
     private fun setObservers() {
-        lifecycleScope.launch {
+        showLoadingIndicator()
+        if (isUserLoggedIn()) {
+            lifecycleScope.launch {
 
-            viewModel.loginFlow.collect { it ->
-                val result = it ?: return@collect
+                viewModel.loginFlow.collect { it ->
+                    val result = it ?: return@collect
 
-                hideLoadingIndicator()
+                    hideLoadingIndicator()
 
-                when (result) {
-                    is Resource.Error -> {
-
-                        val errorMessage = result.message ?: "An error occurred"
-                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-
-                    }
-
-                    is Resource.Loading -> {
-                        showLoadingIndicator()
-                    }
-
-                    is Resource.Success -> {
-
-                        result.data?.let { user ->
-                            viewModel.saveLoginCredential(
-                                User(
-                                    isLoggedIn = true,
-                                    email = user.email,
-                                    userId = user.uid,
-                                    name = user.displayName!!,
-                                    phone = "123"
-                                )
-                            )
-
-                            showSuccessFeedback()
-//                            findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
-                            val intent = Intent(activity, HomeActivity::class.java)
-                            startActivity(intent)
+                    when (result) {
+                        is Resource.Error -> {
+                            hideLoadingIndicator()
+                            val errorMessage = result.message ?: "An error occurred"
+                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                         }
 
+                        is Resource.Loading -> {
+                            showLoadingIndicator()
+                        }
+
+                        is Resource.Success -> {
+                            result.data?.let { user ->
+                                viewModel.saveLoginCredential(
+                                    User(
+                                        isLoggedIn = true,
+                                        email = user.email,
+                                        userId = user.userId,
+                                        name = user.name,
+                                        phone = user.phone
+                                    )
+                                )
+                                hideLoadingIndicator()
+                                showSuccessFeedback()
+                                val intent = Intent(activity, HomeActivity::class.java)
+                                startActivity(intent)
+                            }
+
+                        }
                     }
                 }
             }
+        } else {
+
         }
+    }
+
+    private fun isEmail(input: String): Boolean {
+        // Check if the input looks like an email address
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(input).matches()
+    }
+
+    private fun isPhoneNumber(input: String): Boolean {
+        // Check if the input looks like a phone number
+        return android.util.Patterns.PHONE.matcher(input).matches()
     }
 }

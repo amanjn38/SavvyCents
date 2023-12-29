@@ -22,3 +22,9 @@ fun saveUserData(context: Context, name: String, email: String, phone: String) {
         Toast.makeText(context, "No user found", Toast.LENGTH_LONG).show()
     }
 }
+
+fun isUserLoggedIn(): Boolean {
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    return currentUser != null
+}

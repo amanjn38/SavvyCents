@@ -33,7 +33,7 @@ object AppModule {
     @Provides
     @Singleton
     fun providesSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
-        return context.getSharedPreferences("pocketfinancer", Context.MODE_PRIVATE)
+        return context.getSharedPreferences("UserLoggedInStatus", Context.MODE_PRIVATE)
     }
 
     @Provides

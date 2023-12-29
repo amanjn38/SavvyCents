@@ -12,10 +12,12 @@ import com.finance.savvycents.utilities.PreferenceHelper
 import com.finance.savvycents.utilities.Resource
 import com.finance.savvycents.utilities.Validator
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,15 +44,15 @@ class LoginViewModel @Inject constructor(
     private val _signUpFlow = MutableStateFlow<Resource<FirebaseUser>?>(null)
     val signUpFlow: StateFlow<Resource<FirebaseUser>?> = _signUpFlow
 
-    private val _loginFlow = MutableStateFlow<Resource<FirebaseUser>?>(null)
-    val loginFlow: StateFlow<Resource<FirebaseUser>?> = _loginFlow
+    private val _loginFlow = MutableStateFlow<Resource<User>?>(null)
+    val loginFlow: StateFlow<Resource<User>?> = _loginFlow
 
     val currentUser: FirebaseUser?
         get() = repository.currentUser
 
     init {
-        if (repository.currentUser != null) {
-            _loginFlow.value = Resource.Success(repository.currentUser!!)
+        viewModelScope.launch {
+            fetchUserDetails()
         }
     }
 
@@ -60,7 +62,13 @@ class LoginViewModel @Inject constructor(
         _loginFlow.value = result
     }
 
-    fun signupUser(name: String, email: String, password: String, phoneNumber: String, user: FirebaseUser) = viewModelScope.launch {
+    fun signupUser(
+        name: String,
+        email: String,
+        password: String,
+        phoneNumber: String,
+        user: FirebaseUser
+    ) = viewModelScope.launch {
         _signUpFlow.value = Resource.Loading()
         val result = repository.signup(name, email, password, phoneNumber, user)
         _signUpFlow.value = result
@@ -146,5 +154,33 @@ class LoginViewModel @Inject constructor(
 
     fun saveLoginCredential(user: User) {
         preferenceHelper.saveLoginCredential(user)
+    }
+
+    private suspend fun fetchUserDetails() {
+        if (repository.currentUser != null) {
+            val uid = repository.currentUser?.uid
+
+            // Check if uid is not null
+            if (uid != null) {
+                try {
+                    // Fetch user details from Firebase Database
+                    val userSnapshot =
+                        FirebaseDatabase.getInstance().reference.child("users").child(uid).get().await()
+
+                    // Check if user data exists in the database
+                    if (userSnapshot.exists()) {
+                        val user = userSnapshot.getValue(User::class.java)
+                        _loginFlow.value = Resource.Success(user!!)
+                    } else {
+                        _loginFlow.value =
+                            Resource.Error("User data not found in the database", null)
+                    }
+                } catch (e: Exception) {
+                    _loginFlow.value = Resource.Error("Error fetching user details", null)
+                }
+            } else {
+                _loginFlow.value = Resource.Error("User uid is null", null)
+            }
+        }
     }
 }
