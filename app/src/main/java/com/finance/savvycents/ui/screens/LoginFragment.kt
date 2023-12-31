@@ -284,7 +284,6 @@ class LoginFragment : Fragment() {
     }
 
     private fun setObservers() {
-        showLoadingIndicator()
         if (isUserLoggedIn()) {
             lifecycleScope.launch {
 

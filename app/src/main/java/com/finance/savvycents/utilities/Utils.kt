@@ -28,3 +28,4 @@ fun isUserLoggedIn(): Boolean {
     val currentUser = auth.currentUser
     return currentUser != null
 }
+

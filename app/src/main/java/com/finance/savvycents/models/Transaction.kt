@@ -7,4 +7,6 @@ data class Transaction(
     val amount: Double,
     val category: String,
     val subCategory: String
-)
+){
+    constructor() : this("testing","testing","testing",10.1,"testing","testing")
+}

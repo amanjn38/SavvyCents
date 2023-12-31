@@ -6,20 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
-import com.finance.savvycents.R
 import com.finance.savvycents.databinding.FragmentHomeBinding
-import com.finance.savvycents.databinding.FragmentLoginBinding
 import com.finance.savvycents.models.Transaction
-import com.finance.savvycents.repository.TransactionRepositoryImpl
 import com.finance.savvycents.ui.adapters.TransactionAdapter
 import com.finance.savvycents.utilities.Resource
 import com.finance.savvycents.viewmodels.TransactionViewModel
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -41,18 +34,24 @@ class HomeFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-// Set up RecyclerView and Adapter
-        val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
-        transactionAdapter = TransactionAdapter(/* pass your data here */)
-        recyclerView.adapter = transactionAdapter
 
+        initTransactionAdapter()
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val transaction = Transaction("testing", "testing", "testing", 10.0, "testing", "testing")
+
+//        for(i in 1..19){
+//            viewModel.addTransaction(uid, transaction)
+//        }
+
+
+        viewModel.getTransactions(uid)
         // Observe the transactions LiveData
         viewModel.transactions.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is Resource.Success -> {
                     // Update the RecyclerView with the new list of transactions
+                    System.out.println("testingResult" + result.data)
                     result.data?.let { transactionAdapter.submitList(it) }
-                    // Hide loading indicator or perform any other UI updates
                 }
                 is Resource.Error -> {
                     // Handle error, show error message, etc.
@@ -86,4 +85,21 @@ class HomeFragment : Fragment() {
     override fun onStop() {
         super.onStop()
     }
+
+    private fun initTransactionAdapter() {
+
+        if (this::transactionAdapter.isInitialized) {
+
+            if (binding.recyclerView.adapter == null)
+                binding.recyclerView.adapter = transactionAdapter
+
+            return
+        }
+
+
+        transactionAdapter = TransactionAdapter()
+        binding.recyclerView.adapter = transactionAdapter
+
+    }
+
 }
