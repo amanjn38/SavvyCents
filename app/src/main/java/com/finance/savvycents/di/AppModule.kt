@@ -2,10 +2,20 @@ package com.finance.savvycents.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.room.Room
+import com.finance.savvycents.SavvyCentsDatabase
+import com.finance.savvycents.contact.ContactUseCase
+import com.finance.savvycents.contact.ContactUseCaseImpl
+import com.finance.savvycents.contact.LocalContactDataSource
+import com.finance.savvycents.contact.RemoteContactDataSource
+import com.finance.savvycents.dao.ContactDao
 import com.finance.savvycents.repository.AuthRepository
 import com.finance.savvycents.repository.AuthRepositoryImpl
+import com.finance.savvycents.repository.ContactRepository
+import com.finance.savvycents.repository.ContactRepositoryImpl
 import com.finance.savvycents.repository.TransactionRepository
 import com.finance.savvycents.repository.TransactionRepositoryImpl
+import com.finance.savvycents.viewmodels.ContactViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -46,4 +56,49 @@ object AppModule {
     fun provideTransactionRepository(firestore: FirebaseFirestore): TransactionRepository {
         return TransactionRepositoryImpl(firestore)
     }
+
+    @Provides
+    @Singleton
+    fun provideContactRepository(
+        remoteDataSource: RemoteContactDataSource,
+        localDataSource: LocalContactDataSource
+    ): ContactRepository {
+        return ContactRepositoryImpl(remoteDataSource, localDataSource)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocalContactDataSource(contactDao: ContactDao): LocalContactDataSource {
+        return LocalContactDataSource(contactDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideContactUseCase(repository: ContactRepository): ContactUseCase {
+        return ContactUseCaseImpl(repository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideContactViewModel(useCase: ContactUseCase): ContactViewModel {
+        return ContactViewModel(useCase)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppDatabase(@ApplicationContext context: Context): SavvyCentsDatabase {
+        return Room.databaseBuilder(
+            context,
+            SavvyCentsDatabase::class.java,
+            "contacts"
+        ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideContactDao(appDatabase: SavvyCentsDatabase): ContactDao {
+        return appDatabase.contactDao()
+
+    }
+
 }

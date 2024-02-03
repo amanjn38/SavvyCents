@@ -21,10 +21,11 @@ class HomeActivity : AppCompatActivity() {
         replaceFragment(HomeFragment())
         binding.bottomNavigationView.setOnItemSelectedListener {
             when(it.itemId){
-                R.id.home -> replaceFragment(HomeFragment())
+                R.id.home -> replaceFragment(AddFriendsFragment())
                 R.id.analytics -> replaceFragment(AnalyticsFragment())
                 R.id.cards -> replaceFragment(CardAndAccountFragment())
                 R.id.profile -> replaceFragment(ProfileFragment())
+
                 else -> {
 
                 }

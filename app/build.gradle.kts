@@ -11,12 +11,12 @@ plugins {
 
 android {
     namespace = "com.finance.savvycents"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.finance.savvycents"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
         multiDexEnabled = true
@@ -32,11 +32,11 @@ android {
             )
         }
     }
-    packagingOptions {
-        resources {
-            excludes += "META-INF/gradle/incremental.annotation.processors"
-        }
-    }
+//    packagingOptions {
+//        resources {
+//            excludes += "META-INF/gradle/incremental.annotation.processors"
+//        }
+//    }
     buildFeatures {
         viewBinding = true
     }
@@ -62,6 +62,9 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx:24.10.0")
     implementation("com.google.firebase:firebase-bom:32.7.0")
     implementation("com.firebaseui:firebase-ui-firestore:8.0.2")
+    implementation("androidx.room:room-common:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
