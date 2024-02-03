@@ -69,47 +69,6 @@ class RegisterFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btSignup.setOnClickListener() {
-//            if (loggedInUsingGoogle) {
-//
-//                val name = binding.etName.text.toString()
-//                val email = binding.etEmail.text.toString()
-//                val phone = binding.etPhone.text.toString()
-//                val validName = viewModel.validateName(name)
-//
-//                if (validName is Validator.Error) {
-//                    Toast.makeText(context, validName.errorMsg, Toast.LENGTH_SHORT).show()
-//                    return@setOnClickListener
-//                }
-//
-//                val validEmail = viewModel.validateEmail(email)
-//
-//                if (validEmail is Validator.Error) {
-//                    Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
-//                    return@setOnClickListener
-//                }
-//
-//                val validPhone = viewModel.validatePhone(phone)
-//
-//                if (validPhone is Validator.Error) {
-//                    Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
-//                    return@setOnClickListener
-//                }
-//
-//                viewModel.saveLoginCredential(
-//                    User(
-//                        isLoggedIn = true,
-//                        email = email,
-//                        userId = auth.currentUser!!.uid,
-//                        name = name,
-//                        phone = phone
-//                    )
-//                )
-//
-//                saveUserData(name, email, phone)
-////                findNavController().navigate(R.id.action_registerFragment_to_homeFragment)
-//                val intent = Intent(activity, HomeActivity::class.java)
-//                startActivity(intent)
-//            } else {
             name = binding.etName.text.toString()
             email = binding.etEmail.text.toString()
             password = binding.etPassword.text.toString()
@@ -162,7 +121,8 @@ class RegisterFragment : Fragment() {
                 email,
                 name,
                 phone,
-                password
+                password,
+                "registerFragment"
             )
             findNavController().navigate(action)
 //            }

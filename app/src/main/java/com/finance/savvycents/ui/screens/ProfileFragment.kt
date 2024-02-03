@@ -76,7 +76,7 @@ class ProfileFragment : Fragment() {
 
     private fun showLogoutConfirmationDialog() {
         val sharedPreferences =
-            requireContext().getSharedPreferences("RememberLogin", Context.MODE_PRIVATE)
+            requireContext().getSharedPreferences("UserLoggedInStatus", Context.MODE_PRIVATE)
 
         // Create an AlertDialog.Builder instance
         val builder = AlertDialog.Builder(requireContext())
@@ -88,11 +88,10 @@ class ProfileFragment : Fragment() {
         // Set the positive button and its click listener
         builder.setPositiveButton("Yes") { _: DialogInterface, _: Int ->
             // Clear the shared preference
-            if (sharedPreferences.contains("remember_me")) {
-                sharedPreferences.edit().remove("remember_me").apply()
+            if (sharedPreferences.contains("isLoggedIn")) {
+                sharedPreferences.edit().remove("isLoggedIn").apply()
             }
             viewModel.logout()
-//            findNavController().navigate(R.id.action_profileFragment_to_loginFragment)
             val intent = Intent(activity, MainActivity::class.java)
             startActivity(intent)
             Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()

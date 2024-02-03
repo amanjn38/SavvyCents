@@ -29,13 +29,11 @@
         <action
             android:id="@+id/action_loginFragment_to_otpFragment"
             app:destination="@id/otpFragment" >
-            <argument android:name="email"
+            <argument android:name="emailOrNumber"
                 app:argType="string"/>
-            <argument android:name="name"
+            <argument android:name="loginType"
                 app:argType="string"/>
-            <argument android:name="phone"
-                app:argType="string"/>
-            <argument android:name="password"
+            <argument android:name="from"
                 app:argType="string"/>
         </action>
     </fragment>
@@ -67,6 +65,8 @@
             <argument android:name="phone"
                 app:argType="string"/>
             <argument android:name="password"
+                app:argType="string"/>
+            <argument android:name="from"
                 app:argType="string"/>
         </action>
     </fragment>

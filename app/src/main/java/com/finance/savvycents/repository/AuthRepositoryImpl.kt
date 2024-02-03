@@ -1,21 +1,14 @@
 package com.finance.savvycents.repository
 
-import android.app.Activity
 import android.content.Context
-import android.widget.Toast
-import com.finance.savvycents.SavvyCentsApp
-import com.finance.savvycents.utilities.PhoneAuthCallbacks
-import com.finance.savvycents.utilities.PhoneAuthState
+import com.finance.savvycents.models.User
 import com.finance.savvycents.utilities.Resource
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.PhoneAuthOptions
-import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.SignInMethodQueryResult
-import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.tasks.await
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -28,10 +21,27 @@ class AuthRepositoryImpl @Inject constructor(
     override val currentUser: FirebaseUser?
         get() = firebaseAuth.currentUser
 
-    override suspend fun login(email: String, password: String): Resource<FirebaseUser> {
+    override suspend fun login(email: String, password: String): Resource<User> {
         return try {
             val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-            Resource.Success(result.user!!)
+            val uid = result.user?.uid
+
+            // Check if uid is not null
+            if (uid != null) {
+                // Fetch user details from Firebase Database
+                val userSnapshot =
+                    FirebaseDatabase.getInstance().reference.child("users").child(uid).get().await()
+
+                // Check if user data exists in the database
+                if (userSnapshot.exists()) {
+                    val user = userSnapshot.getValue(User::class.java)
+                    Resource.Success(user!!)
+                } else {
+                    Resource.Error("User data not found in the database")
+                }
+            } else {
+                Resource.Error("User uid is null")
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             Resource.Error(e.message)
@@ -47,33 +57,24 @@ class AuthRepositoryImpl @Inject constructor(
     ): Resource<FirebaseUser> {
 
         return try {
-//            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-//            val user = firebaseAuth.currentUser
-//            System.out.println("testingLinking1" + user)
-//            System.out.println("testingLinking5" + result)
-
-//            result?.user?.updateProfile(
-//                UserProfileChangeRequest.Builder().setDisplayName(name).build()
-//            )?.await()
             val emailCredential = EmailAuthProvider.getCredential(email, password)
 
             user.linkWithCredential(emailCredential).addOnCompleteListener { task ->
 
-                if(task.isSuccessful){
-                    System.out.println("testingLinking2" + "working")
-                }else if (task.isCanceled){
-                    System.out.println("testingLinking3" + "notworking")
-                }else if(task.isComplete){
-                    System.out.println("testingLinking6" + "completed")
-                }else{
+                if (task.isSuccessful) {
+                    System.out.println("Account Created")
+                } else if (task.isCanceled) {
+                    System.out.println("Account creation cancelled")
+                } else if (task.isComplete) {
+                    System.out.println("Account creation completed")
+                } else {
                     val message = task.exception
-                    System.out.println("testingLinking4" + message)
+                    System.out.println("Task creation failed " + message)
                 }
             }
 
             Resource.Success(user)
         } catch (e: Exception) {
-            System.out.println("testingLinking9" + e.message)
             e.printStackTrace()
             Resource.Error(e.message)
         }

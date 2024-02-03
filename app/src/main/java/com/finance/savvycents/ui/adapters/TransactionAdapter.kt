@@ -9,39 +9,36 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.finance.savvycents.R
+import com.finance.savvycents.databinding.TransactionItemBinding
 import com.finance.savvycents.models.Transaction
 import com.finance.savvycents.utilities.DataDiffCallback
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 
-class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
+class TransactionAdapter() :
+    RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
+    private val transactionList = mutableListOf<Transaction>()
 
     private var transactions = mutableListOf<Transaction>()
 
-    class TransactionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val typeTextView: TextView = itemView.findViewById(R.id.typeTextView)
-        val locationTextView: TextView = itemView.findViewById(R.id.locationTextView)
-        val dateTimeTextView: TextView = itemView.findViewById(R.id.dateTimeTextView)
-        val amountTextView: TextView = itemView.findViewById(R.id.amountTextView)
-        val categoryTextView: TextView = itemView.findViewById(R.id.categoryTextView)
-        val subCategoryTextView: TextView = itemView.findViewById(R.id.subCategoryTextView)
+    inner class TransactionViewHolder(private val binding: TransactionItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(transaction: Transaction) {
+            binding.apply {
+                typeTextView.text = transaction.type
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.transaction, parent, false)
-        return TransactionViewHolder(view)
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = TransactionItemBinding.inflate(inflater, parent, false)
+        return TransactionViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
-        val model = transactions[position]
-        // Bind data to views
-        holder.typeTextView.text = "Type: ${model.type}"
-        holder.locationTextView.text = "Location: ${model.location}"
-        holder.dateTimeTextView.text = "Date & Time: ${model.dateTime}"
-        holder.amountTextView.text = "Amount: ${model.amount}"
-        holder.categoryTextView.text = "Category: ${model.category}"
-        holder.subCategoryTextView.text = "Sub Category: ${model.subCategory}"
+        val currentTransaction = transactions[position]
+        holder.bind(currentTransaction)
     }
 
     fun submitList(newList: List<Transaction>) {
@@ -50,8 +47,13 @@ class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.TransactionVi
         transactions.addAll(newList)
     }
 
+    fun clearList() {
+        val itemCount = transactionList.size
+        transactionList.clear()
+        notifyItemRangeRemoved(0, itemCount)
+    }
     override fun getItemCount(): Int {
         return transactions.size
     }
-    }
+}
 

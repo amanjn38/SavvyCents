@@ -9,11 +9,11 @@ class PreferenceHelper @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) {
 
-    fun setUserSkippedAuth(isSkip: Boolean) {
-        sharedPreferences.edit().putBoolean("isAuthSkipped", isSkip).apply()
+    fun setLoggedIn(isLoggedIn: Boolean) {
+        sharedPreferences.edit().putBoolean("isLoggedIn", isLoggedIn).apply()
     }
 
-    fun isUserSkippedAuth() = sharedPreferences.getBoolean("isAuthSkipped", false)
+    fun isUserLoggedIn() = sharedPreferences.getBoolean("isAuthSkipped", false)
 
     fun isLoggedIn(): Boolean {
 

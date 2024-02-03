@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "247322538424-epd6ug2mh9pvqn88fs3d5drdvtior09g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.finance.savvycents",
+            "certificate_hash": "b7b74b7c469c0ed02ad7073caa4d18082a043ce6"
+          }
+        },
+        {
           "client_id": "247322538424-j3nrkc3ekoocpjtrrsfakodohhdcqk1h.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
