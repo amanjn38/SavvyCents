@@ -50,12 +50,13 @@ class HomeFragment : Fragment() {
             when (result) {
                 is Resource.Success -> {
                     // Update the RecyclerView with the new list of transactions
-                    System.out.println("testingResult" + result.data)
                     result.data?.let { transactionAdapter.submitList(it) }
                 }
+
                 is Resource.Error -> {
                     // Handle error, show error message, etc.
                 }
+
                 is Resource.Loading -> {
                     // Show loading indicator or perform any loading-related actions
                 }
@@ -68,9 +69,11 @@ class HomeFragment : Fragment() {
                 is Resource.Success -> {
                     // Transaction added successfully, handle success case if needed
                 }
+
                 is Resource.Error -> {
                     // Handle error, show error message, etc.
                 }
+
                 is Resource.Loading -> {
                     // Show loading indicator or perform any loading-related actions
                 }
@@ -87,19 +90,12 @@ class HomeFragment : Fragment() {
     }
 
     private fun initTransactionAdapter() {
-
         if (this::transactionAdapter.isInitialized) {
-
             if (binding.recyclerView.adapter == null)
                 binding.recyclerView.adapter = transactionAdapter
-
             return
         }
-
-
         transactionAdapter = TransactionAdapter()
         binding.recyclerView.adapter = transactionAdapter
-
     }
-
 }

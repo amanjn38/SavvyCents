@@ -1,20 +1,19 @@
 package com.finance.savvycents.ui.screens
 
 import android.Manifest
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.Telephony
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import com.finance.savvycents.R
+import com.finance.savvycents.notifications.Token
 import com.finance.savvycents.utilities.SmsUtils
 import com.finance.savvycents.utilities.SmsUtils.isDefaultSmsApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -43,6 +42,14 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
         navController.navigate(R.id.loginFragment)
+
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful && task.result != null) {
+                val token = task.result
+                updateToken(token)
+            }
+        }
 //        if (!isDefaultSmsApp(this)) {
 //            // Prompt the user to set your app as the default SMS app
 ////            SmsUtils.openDefaultSmsSettings(this)
@@ -69,5 +76,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun updateToken(token: String?) {
+        val ref = FirebaseDatabase.getInstance().getReference("Tokens")
+        val mToken = Token(token)
+        ref.child(FirebaseAuth.getInstance().currentUser!!.uid).setValue(mToken)
     }
 }
