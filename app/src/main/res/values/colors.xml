@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
     <color name="primaryColor">#FB5607</color>
-    <color name="primaryColorLight">#E19956</color>
     <color name="secondaryColor">#4C474D</color>
     <color name="secondaryColorLight">#B24C474D</color>
     <color name="secondaryExtraLight">#2CD3CECE</color>
-    <color name="light_green">#07CA78</color>
-    <color name="blue">#3A86FF</color>
-    <color name="shimmer_bg">#dddddd</color>
 </resources>

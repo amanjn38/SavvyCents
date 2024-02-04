@@ -63,6 +63,7 @@ dependencies {
     implementation("com.google.firebase:firebase-bom:32.7.0")
     implementation("com.firebaseui:firebase-ui-firestore:8.0.2")
     implementation("androidx.room:room-common:2.6.1")
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     testImplementation("junit:junit:4.13.2")
