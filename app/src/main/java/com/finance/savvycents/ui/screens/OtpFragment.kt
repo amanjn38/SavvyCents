@@ -88,6 +88,9 @@ class OtpFragment : Fragment() {
                 }
             }
         } else if (from.equals("registerFragment")) {
+            binding.btSignup.text = "Signup"
+            binding.btSignup.visibility = View.VISIBLE
+
             arguments?.let {
                 name = it.getString("name", null)
                 email = it.getString("email", null)
@@ -475,6 +478,4 @@ class OtpFragment : Fragment() {
             }
         }
     }
-
-
 }

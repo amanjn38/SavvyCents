@@ -50,6 +50,7 @@ class HomeFragment : Fragment() {
             when (result) {
                 is Resource.Success -> {
                     // Update the RecyclerView with the new list of transactions
+                    System.out.println("testing" + result.data)
                     result.data?.let { transactionAdapter.submitList(it) }
                 }
 

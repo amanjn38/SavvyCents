@@ -70,7 +70,6 @@ class LoginFragment : Fragment() {
         }
 
         binding.btLogin.setOnClickListener {
-
             val inputText = binding.etEmail.text.toString()
             if (isEmail(inputText)) {
                 val validEmail = viewModel.validateEmail(inputText)
@@ -201,7 +200,6 @@ class LoginFragment : Fragment() {
                                     email = user.email,
                                     name = user.displayName!!,
                                     phone = ""
-
                                 )
                             )
                             saveUserData(requireContext(), user.displayName!!, user.email!!, "")

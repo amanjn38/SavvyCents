@@ -120,7 +120,7 @@ class RegisterFragment : Fragment() {
             val action = RegisterFragmentDirections.actionRegisterFragmentToOtpFragment(
                 email,
                 name,
-                phone,
+                "+91" + phone,
                 password,
                 "registerFragment"
             )
