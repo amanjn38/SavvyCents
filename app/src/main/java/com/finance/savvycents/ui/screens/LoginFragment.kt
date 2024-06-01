@@ -77,30 +77,28 @@ class LoginFragment : Fragment() {
                 if (validEmail is Validator.Error) {
                     Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
+                } else {
+                    viewModel.checkEmail(inputText)
                 }
+            }
+        }
+
+        viewModel.emailExists.observe(viewLifecycleOwner) { exists ->
+            if (exists) {
                 val action = LoginFragmentDirections.actionLoginFragmentToOtpFragment(
-                    inputText,
+                    binding.etEmail.text.toString().trim(),
                     "email",
                     "loginFragment"
                 )
                 findNavController().navigate(action)
-
-            } else if (isPhoneNumber(inputText)) {
-                val validPhone = viewModel.validatePhone(inputText)
-
-                if (validPhone is Validator.Error) {
-                    Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                val action = LoginFragmentDirections.actionLoginFragmentToOtpFragment(
-                    inputText,
-                    "phone",
-                    "loginFragment"
+            } else {
+                findNavController().navigate(
+                    LoginFragmentDirections.actionLoginFragmentToRegisterFragment(
+                        binding.etEmail.text.toString().trim()
+                    )
                 )
-                findNavController().navigate(action)
             }
         }
-
         oneTapClient = Identity.getSignInClient(requireContext())
 
         signInRequest = BeginSignInRequest.builder()
@@ -192,7 +190,6 @@ class LoginFragment : Fragment() {
                     if (authTask.isSuccessful) {
                         hideLoadingIndicator()
                         auth.currentUser?.let { user ->
-
                             viewModel.saveLoginCredential(
                                 User(
                                     isLoggedIn = true,
@@ -230,7 +227,6 @@ class LoginFragment : Fragment() {
             .addOnCompleteListener(requireActivity()) { authTask ->
                 if (authTask.isSuccessful) {
                     auth.currentUser?.let { user ->
-
                         viewModel.saveLoginCredential(
                             User(
                                 isLoggedIn = true,
@@ -330,10 +326,5 @@ class LoginFragment : Fragment() {
     private fun isEmail(input: String): Boolean {
         // Check if the input looks like an email address
         return android.util.Patterns.EMAIL_ADDRESS.matcher(input).matches()
-    }
-
-    private fun isPhoneNumber(input: String): Boolean {
-        // Check if the input looks like a phone number
-        return android.util.Patterns.PHONE.matcher(input).matches()
     }
 }

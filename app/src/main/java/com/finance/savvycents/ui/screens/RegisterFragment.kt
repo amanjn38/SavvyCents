@@ -48,7 +48,6 @@ class RegisterFragment : Fragment() {
     private lateinit var phone: String
     private lateinit var password: String
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -57,7 +56,7 @@ class RegisterFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = com.finance.savvycents.databinding.FragmentRegisterBinding.inflate(
+        _binding = FragmentRegisterBinding.inflate(
             inflater,
             container,
             false
@@ -68,6 +67,8 @@ class RegisterFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val inputEmail = arguments?.getString("email", null)
+        binding.etEmail.setText(inputEmail)
         binding.btSignup.setOnClickListener() {
             name = binding.etName.text.toString()
             email = binding.etEmail.text.toString()
@@ -106,58 +107,31 @@ class RegisterFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val validPhone = viewModel.validatePhone(phone)
+            if(binding.etPhone.text.toString() != ""){
+                val validPhone = viewModel.validatePhone(phone)
 
-            if (validPhone is Validator.Error) {
-                Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                if (validPhone is Validator.Error) {
+                    Toast.makeText(context, validPhone.errorMsg, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
             }
 
 
-//            viewModel.sendOtp(phone)
-
-//                viewModel.signupUser(name, email, password)
-            val action = RegisterFragmentDirections.actionRegisterFragmentToOtpFragment(
-                email,
-                name,
-                "+91" + phone,
-                password,
-                "registerFragment"
-            )
-            findNavController().navigate(action)
-//            }
+            viewModel.register(email, password)
         }
 
-//        viewModel.sendOtpStatus.observe(viewLifecycleOwner, Observer { result ->
-//            when (result) {
-//                is Resource.Success -> {
-//                    hideLoadingIndicator()
-//                    Toast.makeText(requireActivity(), "OTP send Successfully", Toast.LENGTH_SHORT)
-//                        .show()
-//                    val action = RegisterFragmentDirections.actionRegisterFragmentToOtpFragment(
-//                        email,
-//                        name,
-//                        phone,
-//                        password
-//                    )
-//                    findNavController().navigate(action)
-//                }
-//
-//                is Resource.Error -> {
-//                    hideLoadingIndicator()
-//                    Toast.makeText(
-//                        requireActivity(),
-//                        "OTP not send, please check the phone number",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//
-//                }
-//
-//                is Resource.Loading -> {
-//                    showLoadingIndicator()
-//                }
-//            }
-//        })
+        viewModel.authResult.observe(viewLifecycleOwner) { (success, message) ->
+            if (success) {
+                saveUserData(name, email, phone)
+                Intent(activity, HomeActivity::class.java).also {
+                    startActivity(it)
+                    requireActivity().finish()
+                }
+            } else {
+                // Show error message
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            }
+        }
 
         auth = Firebase.auth
         oneTapClient = Identity.getSignInClient(requireContext())
@@ -253,9 +227,6 @@ class RegisterFragment : Fragment() {
                 }
         }
         binding.tvSkip.setOnClickListener {
-//            val action =
-//                RegisterFragmentDirections.actionRegisterFragmentToHomeFragment()
-//            findNavController().navigate(action)
             val intent = Intent(activity, HomeActivity::class.java)
             startActivity(intent)
         }
@@ -268,7 +239,6 @@ class RegisterFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         _binding = null
     }
 
@@ -306,14 +276,5 @@ class RegisterFragment : Fragment() {
     private fun showSuccessFeedback() {
         // Show a success message to the user
         Toast.makeText(context, "Signup successful!", Toast.LENGTH_SHORT).show()
-    }
-
-    private suspend fun sendEmailVerification(user: FirebaseUser) {
-        try {
-            user.sendEmailVerification().await()
-        } catch (e: Exception) {
-            // Handle any errors that occur during the email verification process
-            e.printStackTrace()
-        }
     }
 }

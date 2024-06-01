@@ -55,12 +55,9 @@ class AuthRepositoryImpl @Inject constructor(
         phone: String,
         user: FirebaseUser
     ): Resource<FirebaseUser> {
-
         return try {
             val emailCredential = EmailAuthProvider.getCredential(email, password)
-
             user.linkWithCredential(emailCredential).addOnCompleteListener { task ->
-
                 if (task.isSuccessful) {
                     System.out.println("Account Created")
                 } else if (task.isCanceled) {
@@ -72,11 +69,34 @@ class AuthRepositoryImpl @Inject constructor(
                     System.out.println("Task creation failed " + message)
                 }
             }
-
             Resource.Success(user)
         } catch (e: Exception) {
             e.printStackTrace()
             Resource.Error(e.message)
+        }
+    }
+
+    override fun checkIfEmailExists(email: String, callback: (Boolean) -> Unit) {
+        firebaseAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                callback(task.result.signInMethods?.isNotEmpty() == true)
+            } else {
+                callback(false)
+            }
+        }
+    }
+
+    override fun registerUser(
+        email: String,
+        password: String,
+        callback: (Boolean, String?) -> Unit
+    ) {
+        firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                callback(true, null)
+            } else {
+                callback(false, task.exception?.message)
+            }
         }
     }
 

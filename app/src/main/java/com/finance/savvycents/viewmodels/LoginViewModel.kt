@@ -26,11 +26,23 @@ class LoginViewModel @Inject constructor(
     private val preferenceHelper: PreferenceHelper
 ) : ViewModel() {
     private var currentVerificationId: String? = null
-//    private val _login = MutableLiveData<Resource<FirebaseUser>?>(null)
-//    val login: LiveData<Resource<FirebaseUser>?> = _login
-//
-//    private val _signup = MutableLiveData<Resource<FirebaseUser>?>(null)
-//    val signup: LiveData<Resource<FirebaseUser>?> = _signup
+    private val _emailExists = MutableLiveData<Boolean>()
+    val emailExists: LiveData<Boolean> get() = _emailExists
+
+    private val _authResult = MutableLiveData<Pair<Boolean, String?>>()
+    val authResult: LiveData<Pair<Boolean, String?>> get() = _authResult
+
+    fun checkEmail(email: String) {
+        repository.checkIfEmailExists(email) {
+            _emailExists.value = it
+        }
+    }
+
+    fun register(email: String, password: String) {
+        repository.registerUser(email, password) { success, message ->
+            _authResult.value = Pair(success, message)
+        }
+    }
 
     private val _sendOtpStatus = MutableLiveData<Resource<PhoneAuthState>>()
     val sendOtpStatus: LiveData<Resource<PhoneAuthState>> = _sendOtpStatus
@@ -50,30 +62,17 @@ class LoginViewModel @Inject constructor(
     val currentUser: FirebaseUser?
         get() = repository.currentUser
 
-    init {
-        viewModelScope.launch {
-            fetchUserDetails()
-        }
-    }
+//    init {
+//        viewModelScope.launch {
+//            fetchUserDetails()
+//        }
+//    }
 
     fun loginUser(email: String, password: String) = viewModelScope.launch {
         _loginFlow.value = Resource.Loading()
         val result = repository.login(email, password)
         _loginFlow.value = result
     }
-
-    fun signupUser(
-        name: String,
-        email: String,
-        password: String,
-        phoneNumber: String,
-        user: FirebaseUser
-    ) = viewModelScope.launch {
-        _signUpFlow.value = Resource.Loading()
-        val result = repository.signup(name, email, password, phoneNumber, user)
-        _signUpFlow.value = result
-    }
-
     fun sendForgotPasswordEmail(email: String) {
         viewModelScope.launch {
             _resetPasswordStatus.value = Resource.Loading()
@@ -165,7 +164,8 @@ class LoginViewModel @Inject constructor(
                 try {
                     // Fetch user details from Firebase Database
                     val userSnapshot =
-                        FirebaseDatabase.getInstance().reference.child("users").child(uid).get().await()
+                        FirebaseDatabase.getInstance().reference.child("users").child(uid).get()
+                            .await()
 
                     // Check if user data exists in the database
                     if (userSnapshot.exists()) {

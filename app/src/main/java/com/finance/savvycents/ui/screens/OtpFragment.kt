@@ -75,17 +75,6 @@ class OtpFragment : Fragment() {
                 binding.btSignup.visibility = View.GONE
                 binding.btLoginEmail.visibility = View.VISIBLE
                 binding.btLoginPhone.visibility = View.GONE
-            } else if (loginType.equals("phone")) {
-                binding.pinview.visibility = View.VISIBLE
-                binding.etPassword.visibility = View.GONE
-                textInput = arguments?.getString("emailOrNumber")
-                binding.btSignup.visibility = View.GONE
-                binding.btLoginEmail.visibility = View.GONE
-                binding.btLoginPhone.visibility = View.VISIBLE
-                textInput = "+91" + textInput
-                lifecycleScope.launch {
-                    sendVerificationCodeForLogin(textInput)
-                }
             }
         } else if (from.equals("registerFragment")) {
             binding.btSignup.text = "Signup"
@@ -97,9 +86,11 @@ class OtpFragment : Fragment() {
                 password = it.getString("password", null)
                 phone = it.getString("phone", null)
             }
-            lifecycleScope.launch {
-                sendVerificationCode(email, name, password, phone)
-            }
+
+
+//            lifecycleScope.launch {
+//                sendVerificationCode(email, name, password, phone)
+//            }
 
         }
         binding.btLoginEmail.setOnClickListener {
@@ -166,141 +157,6 @@ class OtpFragment : Fragment() {
         _binding = null
     }
 
-    private suspend fun sendVerificationCode(
-        email: String?,
-        name: String?,
-        password: String?,
-        number: String?
-    ) {
-        var verified = false
-        var codeEntered: String
-
-        var mCallBack: PhoneAuthProvider.OnVerificationStateChangedCallbacks? = null
-
-        mCallBack = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-            override fun onCodeSent(
-                verificationId: String,
-                forceResendingToken: PhoneAuthProvider.ForceResendingToken
-            ) {
-                binding.btSignup.setOnClickListener {
-                    if (verified) return@setOnClickListener
-                    showLoadingIndicator()
-                    codeEntered = binding.pinview.text.toString()
-                    if (codeEntered.isEmpty() || codeEntered.length < 6) {
-
-                        Toast.makeText(
-                            requireActivity(),
-                            "Enter a 6 digit valid OTP",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@setOnClickListener
-                    }
-                    verified = true
-                    val credential = PhoneAuthProvider.getCredential(verificationId, codeEntered)
-                    lifecycleScope.launch {
-                        try {
-                            val result = firebaseAuth.signInWithCredential(credential).await()
-                            val currentUser = firebaseAuth.currentUser
-
-                            if (currentUser != null) {
-                                Toast.makeText(
-                                    requireActivity(),
-                                    "Login Successful",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                viewModel.signupUser(
-                                    name!!,
-                                    email!!,
-                                    password!!,
-                                    phone!!,
-                                    currentUser
-                                )
-                                hideLoadingIndicator()
-                                saveUserData(requireContext(), name!!, email!!, phone!!)
-                                val intent = Intent(activity, HomeActivity::class.java)
-                                startActivity(intent)
-                            } else {
-                                Toast.makeText(
-                                    requireActivity(),
-                                    "Verification Failed",
-                                    Toast.LENGTH_LONG
-                                ).show()
-
-//                                Resource.Error("Verification failed")
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(requireActivity(), e.message, Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-            }
-
-            override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
-                if (!verified) {
-                    verified = true
-                    lifecycleScope.launch {
-                        try {
-                            val result =
-                                firebaseAuth.signInWithCredential(phoneAuthCredential).await()
-                            val currentUser = firebaseAuth.currentUser
-                            if (currentUser != null) {
-                                hideLoadingIndicator()
-                                Toast.makeText(
-                                    requireActivity(),
-                                    "Login Successful",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                viewModel.signupUser(
-                                    name!!,
-                                    email!!,
-                                    password!!,
-                                    phone!!,
-                                    currentUser
-                                )
-                                hideLoadingIndicator()
-                                saveUserData(requireContext(), name, email, phone!!)
-                                val intent = Intent(activity, HomeActivity::class.java)
-                                startActivity(intent)
-                            } else {
-                                Toast.makeText(
-                                    requireActivity(),
-                                    "Verification Failed",
-                                    Toast.LENGTH_LONG
-                                ).show()
-
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(requireActivity(), e.message, Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-            }
-
-            override fun onVerificationFailed(e: FirebaseException) {
-                verified = false
-                Toast.makeText(requireActivity(), e.message, Toast.LENGTH_LONG).show()
-            }
-        }
-
-//        PhoneAuthProvider.getInstance().verifyPhoneNumber(
-//            number,
-//            60,
-//            TimeUnit.SECONDS,
-//            requireActivity(),
-//            mCallBack!!
-//        )
-        val options = PhoneAuthOptions.newBuilder(firebaseAuth)
-            .setPhoneNumber(number!!)       // Phone number to verify
-            .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
-            .setActivity(requireActivity())                 // Activity (for callback binding)
-            .setCallbacks(mCallBack)          // OnVerificationStateChangedCallbacks
-            .build()
-
-        PhoneAuthProvider.verifyPhoneNumber(options)
-
-    }
-
-
     private fun showLoadingIndicator() {
         isLoading = true
         // Show a loading indicator (e.g., progress bar)
@@ -318,120 +174,6 @@ class OtpFragment : Fragment() {
     private fun showSuccessFeedback(message: String) {
         // Show a success message to the user
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
-
-    private suspend fun sendVerificationCodeForLogin(textInput: String?) {
-        var verified = false
-        var codeEntered: String
-
-        var mCallBack: PhoneAuthProvider.OnVerificationStateChangedCallbacks? = null
-
-        mCallBack = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-            override fun onCodeSent(
-                verificationId: String,
-                forceResendingToken: PhoneAuthProvider.ForceResendingToken
-            ) {
-                binding.btLoginPhone.setOnClickListener {
-                    if (verified) return@setOnClickListener
-                    showLoadingIndicator()
-                    codeEntered = binding.pinview.text.toString()
-                    if (codeEntered.isEmpty() || codeEntered.length < 6) {
-
-                        Toast.makeText(
-                            requireActivity(),
-                            "Enter a 6 digit valid OTP",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@setOnClickListener
-                    }
-                    verified = true
-                    val credential = PhoneAuthProvider.getCredential(verificationId, codeEntered)
-                    lifecycleScope.launch {
-                        try {
-                            val result = firebaseAuth.signInWithCredential(credential).await()
-                            val currentUser = firebaseAuth.currentUser
-
-                            if (currentUser != null) {
-                                Toast.makeText(
-                                    requireActivity(),
-                                    "Login Successful",
-                                    Toast.LENGTH_LONG
-                                ).show()
-
-                                hideLoadingIndicator()
-                                val intent = Intent(activity, HomeActivity::class.java)
-                                startActivity(intent)
-                            } else {
-                                Toast.makeText(
-                                    requireActivity(),
-                                    "Verification Failed",
-                                    Toast.LENGTH_LONG
-                                ).show()
-
-//                                Resource.Error("Verification failed")
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(requireActivity(), e.message, Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-            }
-
-            override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
-                if (!verified) {
-                    verified = true
-                    lifecycleScope.launch {
-                        try {
-                            val result =
-                                firebaseAuth.signInWithCredential(phoneAuthCredential).await()
-                            val currentUser = firebaseAuth.currentUser
-                            if (currentUser != null) {
-                                hideLoadingIndicator()
-                                Toast.makeText(
-                                    requireActivity(),
-                                    "Login Successful",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                hideLoadingIndicator()
-                                val intent = Intent(activity, HomeActivity::class.java)
-                                startActivity(intent)
-                            } else {
-                                Toast.makeText(
-                                    requireActivity(),
-                                    "Verification Failed",
-                                    Toast.LENGTH_LONG
-                                ).show()
-
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(requireActivity(), e.message, Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-            }
-
-            override fun onVerificationFailed(e: FirebaseException) {
-                verified = false
-                Toast.makeText(requireActivity(), e.message, Toast.LENGTH_LONG).show()
-            }
-        }
-
-//        PhoneAuthProvider.getInstance().verifyPhoneNumber(
-//            number,
-//            60,
-//            TimeUnit.SECONDS,
-//            requireActivity(),
-//            mCallBack!!
-//        )
-        val options = PhoneAuthOptions.newBuilder(firebaseAuth)
-            .setPhoneNumber(textInput!!)       // Phone number to verify
-            .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
-            .setActivity(requireActivity())                 // Activity (for callback binding)
-            .setCallbacks(mCallBack)          // OnVerificationStateChangedCallbacks
-            .build()
-
-        PhoneAuthProvider.verifyPhoneNumber(options)
-
     }
 
     private fun setObserversForLogin() {
@@ -468,7 +210,6 @@ class OtpFragment : Fragment() {
                             )
 
                             showSuccessFeedback("Login Successful")
-//                            findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                             val intent = Intent(activity, HomeActivity::class.java)
                             startActivity(intent)
                         }
