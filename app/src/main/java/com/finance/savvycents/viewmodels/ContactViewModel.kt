@@ -19,6 +19,7 @@ class ContactViewModel @Inject constructor(private val contactUseCase: ContactUs
     fun loadContacts() {
         viewModelScope.launch {
             _contacts.value = Resource.Loading()
+            System.out.println("testingLoad1")
             _contacts.value = contactUseCase.getContacts()
         }
     }

@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SavvyCents"
 include(":app")
- 
+include(":networksdk")

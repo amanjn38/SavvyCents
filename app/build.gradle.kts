@@ -96,7 +96,5 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-auth:20.5.0")
 
-    //Not Required
-    implementation("com.jakewharton.threetenabp:threetenabp:1.3.0")
     implementation("io.github.chaosleung:pinview:1.4.4")
 }

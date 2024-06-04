@@ -9,6 +9,7 @@ import com.finance.savvycents.contact.ContactUseCaseImpl
 import com.finance.savvycents.contact.LocalContactDataSource
 import com.finance.savvycents.contact.RemoteContactDataSource
 import com.finance.savvycents.dao.ContactDao
+import com.finance.savvycents.dao.FriendDao
 import com.finance.savvycents.repository.AuthRepository
 import com.finance.savvycents.repository.AuthRepositoryImpl
 import com.finance.savvycents.repository.ContactRepository
@@ -98,7 +99,11 @@ object AppModule {
     @Singleton
     fun provideContactDao(appDatabase: SavvyCentsDatabase): ContactDao {
         return appDatabase.contactDao()
-
     }
 
+    @Provides
+    @Singleton
+    fun provideFriendDao(appDatabase: SavvyCentsDatabase): FriendDao {
+        return appDatabase.friendDao()
+    }
 }

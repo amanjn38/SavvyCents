@@ -5,12 +5,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.finance.savvycents.R
 import com.finance.savvycents.databinding.FragmentAddTransactionBinding
-import dagger.hilt.android.AndroidEntryPoint
+import com.finance.savvycents.databinding.FragmentVerifyContactBinding
 
-@AndroidEntryPoint
-class AddTransactionFragment : Fragment() {
-    private var _binding: FragmentAddTransactionBinding? = null
+class VerifyContactFragment : Fragment() {
+    private var _binding: FragmentVerifyContactBinding? = null
     private val binding get() = _binding!!
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,11 +19,15 @@ class AddTransactionFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentAddTransactionBinding.inflate(inflater, container, false)
+    ): View {
+        _binding = FragmentVerifyContactBinding.inflate(inflater, container, false)
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
+
+    }
 
 }

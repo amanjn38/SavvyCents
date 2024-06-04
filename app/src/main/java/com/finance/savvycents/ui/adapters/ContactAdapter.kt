@@ -1,5 +1,6 @@
 package com.finance.savvycents.ui.adapters
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -12,12 +13,21 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import com.finance.savvycents.R
 import com.finance.savvycents.models.ContactEntity
+import com.finance.savvycents.ui.screens.AddFriendsFragmentDirections
 import java.util.Locale
 
-class ContactAdapter(private val contacts: List<ContactEntity>) :
+
+class ContactAdapter(
+    private val contacts: List<ContactEntity>,
+    private val context: Context,
+    private val fragment: Fragment
+) :
     RecyclerView.Adapter<ContactAdapter.ContactViewHolder>() {
     private var filteredContacts: List<ContactEntity> = contacts
 
@@ -44,6 +54,13 @@ class ContactAdapter(private val contacts: List<ContactEntity>) :
 //            // Update contact selection status
 //            contact.isSelected = isChecked
 //        }
+
+        holder.parent.setOnClickListener {
+            val navController = NavHostFragment.findNavController(fragment)
+            val action = AddFriendsFragmentDirections.actionAddFriendsFragmentToVerifyContactFragment(contact)
+            navController.navigate(action)
+        }
+
     }
 
     private fun getCircularDrawable(name: String): BitmapDrawable {
@@ -83,41 +100,17 @@ class ContactAdapter(private val contacts: List<ContactEntity>) :
         val imageInitials: ImageView = itemView.findViewById(R.id.imageInitials)
         val textName: TextView = itemView.findViewById(R.id.textName)
         val checkBox: CheckBox = itemView.findViewById(R.id.checkBox)
+        val parent: ConstraintLayout = itemView.findViewById(R.id.parent)
     }
 
-//    override fun getFilter(): Filter {
-//        return object : Filter() {
-//            override fun performFiltering(constraint: CharSequence?): FilterResults {
-//                val query = constraint?.toString()?.lowercase(Locale.ROOT)
-//                filteredContacts = if (query.isNullOrBlank()) {
-//                    contacts
-//                } else {
-//                    contacts.filter {
-//                        it.name.lowercase(Locale.ROOT).contains(query)
-//                    }
-//                }
-//
-//                val results = FilterResults()
-//                results.values = filteredContacts
-//                return results
-//            }
-//
-//            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-//                notifyDataSetChanged()
-//            }
-//        }
-//    }
-
     fun filter(query: String?) {
-        System.out.println("testing" + query)
         filteredContacts = listOf()
         query?.let { searchText ->
             filteredContacts = contacts.filter {
-                it.name.lowercase(Locale.getDefault()).contains(searchText.lowercase(Locale.getDefault()))
+                it.name.lowercase(Locale.getDefault())
+                    .contains(searchText.lowercase(Locale.getDefault()))
             }
-            System.out.println("testing" + filteredContacts)
             notifyDataSetChanged()
         }
     }
-
 }

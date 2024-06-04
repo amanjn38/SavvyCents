@@ -79,8 +79,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateToken(token: String?) {
-        val ref = FirebaseDatabase.getInstance().getReference("Tokens")
-        val mToken = Token(token)
-        ref.child(FirebaseAuth.getInstance().currentUser!!.uid).setValue(mToken)
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val ref = FirebaseDatabase.getInstance().getReference("Tokens")
+            val mToken = Token(token)
+            ref.child(currentUser.uid).setValue(mToken)
+        } else {
+            // Handle the case when there is no authenticated user
+            // For example, you can log an error or display a message to the user
+//            Log.e(TAG, "Current user is null")
+        }
     }
+
 }

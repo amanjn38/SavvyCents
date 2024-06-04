@@ -9,7 +9,7 @@
         android:id="@+id/forgotPasswordFragment"
         android:name="com.finance.savvycents.ui.screens.ForgotPasswordFragment"
         android:label="fragment_forgot_password"
-        tools:layout="@layout/fragment_forgot_password" >
+        tools:layout="@layout/fragment_forgot_password">
         <action
             android:id="@+id/action_forgotPasswordFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
@@ -19,7 +19,7 @@
         android:id="@+id/loginFragment"
         android:name="com.finance.savvycents.ui.screens.LoginFragment"
         android:label="fragment_login"
-        tools:layout="@layout/fragment_login" >
+        tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
             app:destination="@id/forgotPasswordFragment" />
@@ -28,20 +28,23 @@
             app:destination="@id/registerFragment" />
         <action
             android:id="@+id/action_loginFragment_to_otpFragment"
-            app:destination="@id/otpFragment" >
-            <argument android:name="emailOrNumber"
-                app:argType="string"/>
-            <argument android:name="loginType"
-                app:argType="string"/>
-            <argument android:name="from"
-                app:argType="string"/>
+            app:destination="@id/otpFragment">
+            <argument
+                android:name="emailOrNumber"
+                app:argType="string" />
+            <argument
+                android:name="loginType"
+                app:argType="string" />
+            <argument
+                android:name="from"
+                app:argType="string" />
         </action>
     </fragment>
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.finance.savvycents.ui.screens.ProfileFragment"
         android:label="fragment_profile"
-        tools:layout="@layout/fragment_profile" >
+        tools:layout="@layout/fragment_profile">
         <action
             android:id="@+id/action_profileFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
@@ -50,24 +53,29 @@
         android:id="@+id/registerFragment"
         android:name="com.finance.savvycents.ui.screens.RegisterFragment"
         android:label="fragment_register"
-        tools:layout="@layout/fragment_register" >
+        tools:layout="@layout/fragment_register">
         <action
             android:id="@+id/action_registerFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
         <action
             android:id="@+id/action_registerFragment_to_otpFragment"
-            app:destination="@id/otpFragment" >
+            app:destination="@id/otpFragment">
 
-            <argument android:name="email"
-                app:argType="string"/>
-            <argument android:name="name"
-                app:argType="string"/>
-            <argument android:name="phone"
-                app:argType="string"/>
-            <argument android:name="password"
-                app:argType="string"/>
-            <argument android:name="from"
-                app:argType="string"/>
+            <argument
+                android:name="email"
+                app:argType="string" />
+            <argument
+                android:name="name"
+                app:argType="string" />
+            <argument
+                android:name="phone"
+                app:argType="string" />
+            <argument
+                android:name="password"
+                app:argType="string" />
+            <argument
+                android:name="from"
+                app:argType="string" />
         </action>
     </fragment>
     <fragment
@@ -75,4 +83,29 @@
         android:name="com.finance.savvycents.ui.screens.OtpFragment"
         android:label="fragment_otp"
         tools:layout="@layout/fragment_otp" />
+    <fragment
+        android:id="@+id/addFriendsFragment"
+        android:name="com.finance.savvycents.ui.screens.AddFriendsFragment"
+        android:label="fragment_add_friends"
+        tools:layout="@layout/fragment_add_friends">
+        <action
+            android:id="@+id/action_addFriendsFragment_to_verifyContactFragment"
+            app:destination="@id/verifyContactFragment" >
+            <argument
+                android:name="contact"
+                app:argType="ContactEntity"
+                app:nullable="false" />
+
+        </action>
+    </fragment>
+    <fragment
+        android:id="@+id/verifyContactFragment"
+        android:name="com.finance.savvycents.ui.screens.VerifyContactFragment"
+        android:label="fragment_verify_contact"
+        tools:layout="@layout/fragment_verify_contact">
+        <action
+            android:id="@+id/action_verifyContactFragment_to_addFriendsFragment"
+            app:destination="@id/addFriendsFragment">
+        </action>
+    </fragment>
 </navigation>
