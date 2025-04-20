@@ -19,8 +19,6 @@ import com.finance.savvycents.repository.ContactRepository
 import com.finance.savvycents.repository.ContactRepositoryImpl
 import com.finance.savvycents.repository.TransactionRepository
 import com.finance.savvycents.repository.TransactionRepositoryImpl
-import com.finance.savvycents.viewmodels.CategoryViewModel
-import com.finance.savvycents.viewmodels.ContactViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -81,12 +79,6 @@ object AppModule {
     @Singleton
     fun provideContactUseCase(repository: ContactRepository): ContactUseCase {
         return ContactUseCaseImpl(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideContactViewModel(useCase: ContactUseCase): ContactViewModel {
-        return ContactViewModel(useCase)
     }
 
     @Provides

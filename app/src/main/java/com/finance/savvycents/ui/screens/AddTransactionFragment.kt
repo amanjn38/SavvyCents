@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.finance.savvycents.databinding.FragmentAddTransactionBinding
 import com.finance.savvycents.ui.adapters.CategoryAdapter
 import com.finance.savvycents.utilities.Resource
-import com.finance.savvycents.viewmodels.CategoryViewModel
+import com.finance.savvycents.ui.viewmodels.CategoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -59,6 +59,10 @@ class AddTransactionFragment : Fragment() {
                     binding.recyclerView.visibility = View.GONE
                     binding.errorTextView.text = resource.message
                     binding.errorTextView.visibility = View.VISIBLE
+                }
+
+                is Resource.Idle -> {
+                    // handle idle
                 }
             }
         }

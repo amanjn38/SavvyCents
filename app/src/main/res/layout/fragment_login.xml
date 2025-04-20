@@ -30,26 +30,85 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_back" />
 
-    <EditText
-        android:id="@+id/et_email"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/emailLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="32dp"
         android:layout_marginTop="60dp"
-        android:background="@drawable/btn_round_unselected_1"
-        android:drawableStart="@drawable/baseline_mail_outline_24"
-        android:gravity="center"
-        android:hint="Email/Username"
-        android:inputType="textWebEmailAddress"
-        android:maxLines="1"
-        android:paddingVertical="12dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="8dp"
-        android:scrollHorizontally="true"
-        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_login" />
+        app:layout_constraintTop_toBottomOf="@id/tv_login">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_round_unselected_1"
+            android:drawableStart="@drawable/baseline_mail_outline_24"
+            android:gravity="center"
+            android:hint="Email"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingVertical="12dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp"
+            android:scrollHorizontally="true"
+            android:textSize="16sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/passwordLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/emailLayout"
+        android:visibility="visible">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_round_unselected_1"
+            android:gravity="center"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:paddingVertical="12dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp"
+            android:scrollHorizontally="true"
+            android:textSize="16sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/passwordLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
+    <TextView
+        android:id="@+id/tv_forgot_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:padding="4dp"
+        android:text="Forgot Password?"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/progressBar" />
 
     <TextView
         android:id="@+id/tv_dont_have_an_account"
@@ -62,75 +121,47 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_forgot_pass" />
+        app:layout_constraintTop_toBottomOf="@id/tv_forgot_password" />
 
-    <TextView
-        android:id="@+id/tv_forgot_pass"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:text="Forgot Password?"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@id/et_email"
-        app:layout_constraintTop_toBottomOf="@id/et_email" />
-
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/bt_login"
         style="@style/ButtonTextStyle2_Selected_Primary"
         android:layout_width="160dp"
         android:layout_height="40dp"
-        android:layout_marginTop="64dp"
-        android:text="Login"
+        android:layout_marginTop="24dp"
+        android:text="Continue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_forgot_pass" />
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/bt_login"
-        app:layout_constraintEnd_toEndOf="@id/bt_login"
-        app:layout_constraintStart_toStartOf="@id/bt_login"
-        app:layout_constraintTop_toTopOf="@id/bt_login" />
+        app:layout_constraintTop_toBottomOf="@id/tv_dont_have_an_account" />
 
     <TextView
         android:id="@+id/tv_skip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:padding="4dp"
         android:text="Skip"
-        android:textColor="@color/secondaryColor"
         android:textSize="12sp"
-        app:layout_constraintBottom_toTopOf="@id/tv_signup_through"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/bt_login" />
 
-    <TextView
-        android:id="@+id/tv_signup_through"
+    <LinearLayout
+        android:id="@+id/ll_social_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
-        android:text="Or Signup through"
-        android:textColor="@color/secondaryColor"
-        android:textSize="12sp"
+        android:layout_marginBottom="32dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_skip" />
+        app:layout_constraintStart_toStartOf="parent">
 
-    <ImageView
-        android:id="@+id/signup_google"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="12dp"
-        android:src="@drawable/google"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_signup_through" />
+        <ImageView
+            android:id="@+id/iv_google"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="24dp"
+            android:src="@drawable/google" />
+
+    </LinearLayout>
 
 </com.finance.savvycents.ui.custom.CustomConstraintLayout>
