@@ -29,7 +29,9 @@ class TransactionViewModel @Inject constructor(private val repository: Transacti
 
     fun getTransactions(userId: String) = viewModelScope.launch {
         _transactions.value = Resource.Loading()
-        repository.getTransactions(userId)
+        System.out.println("testing111" + userId)
+
+        repository.getTransactions("BFIUUFvZcIVXzzlwvuQl5l9lXlJ2")
             .collect { result ->
                 _transactions.value = result
             }

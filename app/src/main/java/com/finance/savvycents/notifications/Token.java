@@ -1,7 +1,5 @@
 package com.finance.savvycents.notifications;
 
-import com.google.gson.annotations.SerializedName;
-
 public class Token {
 
     public String token;
@@ -9,4 +7,11 @@ public class Token {
         this.token = token;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

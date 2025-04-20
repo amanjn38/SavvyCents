@@ -44,12 +44,15 @@ class MainActivity : AppCompatActivity() {
         navController.navigate(R.id.loginFragment)
 
 
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (task.isSuccessful && task.result != null) {
-                val token = task.result
-                updateToken(token)
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful && task.result != null) {
+                    val token = task.result
+                    updateToken(token)
+                }
             }
         }
+
 //        if (!isDefaultSmsApp(this)) {
 //            // Prompt the user to set your app as the default SMS app
 ////            SmsUtils.openDefaultSmsSettings(this)
@@ -65,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        }
 
-        if(checkSelfPermission(Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
 
             SmsUtils.requestSmsPermission(this) { granted ->
                 if (granted) {

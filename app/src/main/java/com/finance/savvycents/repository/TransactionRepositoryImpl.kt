@@ -19,12 +19,16 @@ class TransactionRepositoryImpl(private val firestore: FirebaseFirestore) : Tran
     override suspend fun addTransaction(userId: String, transaction: Transaction): Resource<Unit> {
         return withContext(Dispatchers.IO) {
             try {
+                System.out.println("testing1" + userId)
+
                 transactionsCollection.document(userId)
                     .collection("user_transactions")
                     .add(transaction)
                     .await()
                 Resource.Success(Unit)
             } catch (e: Exception) {
+                System.out.println("testing11" + userId)
+
                 Resource.Error("Failed to add transaction: ${e.message}")
             }
         }

@@ -8,14 +8,18 @@ import com.finance.savvycents.contact.ContactUseCase
 import com.finance.savvycents.contact.ContactUseCaseImpl
 import com.finance.savvycents.contact.LocalContactDataSource
 import com.finance.savvycents.contact.RemoteContactDataSource
+import com.finance.savvycents.dao.CategoryDao
 import com.finance.savvycents.dao.ContactDao
 import com.finance.savvycents.dao.FriendDao
 import com.finance.savvycents.repository.AuthRepository
 import com.finance.savvycents.repository.AuthRepositoryImpl
+import com.finance.savvycents.repository.CategoryRepository
+import com.finance.savvycents.repository.CategoryRepositoryImpl
 import com.finance.savvycents.repository.ContactRepository
 import com.finance.savvycents.repository.ContactRepositoryImpl
 import com.finance.savvycents.repository.TransactionRepository
 import com.finance.savvycents.repository.TransactionRepositoryImpl
+import com.finance.savvycents.viewmodels.CategoryViewModel
 import com.finance.savvycents.viewmodels.ContactViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -101,6 +105,25 @@ object AppModule {
         return appDatabase.contactDao()
     }
 
+    @Provides
+    @Singleton
+    fun provideCategoryDao(appDatabase: SavvyCentsDatabase): CategoryDao {
+        return appDatabase.categoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCategoryRepository(
+        categoryDao: CategoryDao
+    ): CategoryRepository {
+        return CategoryRepositoryImpl(categoryDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCategoryViewModel(repository: CategoryRepository): CategoryViewModel {
+        return CategoryViewModel(repository)
+    }
     @Provides
     @Singleton
     fun provideFriendDao(appDatabase: SavvyCentsDatabase): FriendDao {

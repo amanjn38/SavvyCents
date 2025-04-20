@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "247322538424-hcpe8fuvdj6ip37jp7or5rgcb9u23fo2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.finance.savvycents",
+            "certificate_hash": "18c8f288f3fb8fc36be639097acd49a3c29b5e86"
+          }
+        },
+        {
           "client_id": "247322538424-j3nrkc3ekoocpjtrrsfakodohhdcqk1h.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
