@@ -1,20 +1,12 @@
 package com.finance.savvycents.ui.adapters
 
-import android.os.Parcel
-import android.os.Parcelable
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.finance.savvycents.R
 import com.finance.savvycents.databinding.TransactionItemBinding
 import com.finance.savvycents.models.Transaction
 import com.finance.savvycents.utilities.DataDiffCallback
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
-
 class TransactionAdapter() :
     RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
     private val transactionList = mutableListOf<Transaction>()

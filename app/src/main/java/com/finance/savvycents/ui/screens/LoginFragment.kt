@@ -3,7 +3,6 @@ package com.finance.savvycents.ui.screens
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,21 +10,17 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.finance.savvycents.R
 import com.finance.savvycents.databinding.FragmentLoginBinding
-import com.finance.savvycents.models.User
+import com.finance.savvycents.ui.viewmodels.LoginViewModel
 import com.finance.savvycents.utilities.Resource
-import com.finance.savvycents.utilities.Validator
-import com.finance.savvycents.utilities.isUserLoggedIn
-import com.finance.savvycents.utilities.saveUserData
-import com.finance.savvycents.viewmodels.LoginViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.android.gms.auth.api.identity.SignInCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
@@ -38,17 +33,14 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
     private val viewModel: LoginViewModel by viewModels()
-    private var isLoading = false
     private lateinit var oneTapClient: SignInClient
     private lateinit var signInRequest: BeginSignInRequest
     private lateinit var auth: FirebaseAuth
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private lateinit var googleSignInLauncher: ActivityResultLauncher<IntentSenderRequest>
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
@@ -58,47 +50,74 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setObservers()
-        auth = FirebaseAuth.getInstance()
+        auth = Firebase.auth
+        setupGoogleSignIn()
 
-        binding.tvBack.setOnClickListener {
-            findNavController().popBackStack()
+        // Password field is always visible now, no need to toggle visibility
+        binding.btLogin.text = "Login"
+
+        binding.btLogin.setOnClickListener {
+            handleLoginClick()
         }
 
         binding.tvDontHaveAnAccount.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
 
-        binding.btLogin.setOnClickListener {
-            val inputText = binding.etEmail.text.toString()
-            if (isEmail(inputText)) {
-                val validEmail = viewModel.validateEmail(inputText)
+        binding.ivGoogle.setOnClickListener {
+            beginGoogleSignIn()
+        }
 
-                if (validEmail is Validator.Error) {
-                    Toast.makeText(context, validEmail.errorMsg, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                } else {
-                    viewModel.checkEmail(inputText)
-                }
+        binding.tvBack.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
+        binding.tvSkip.setOnClickListener {
+            Intent(
+                activity,
+                HomeActivity::class.java
+            ).also {
+                startActivity(it)
+                requireActivity().finish()
             }
         }
 
-        viewModel.emailExists.observe(viewLifecycleOwner) { exists ->
-            if (exists) {
-                val action = LoginFragmentDirections.actionLoginFragmentToOtpFragment(
-                    binding.etEmail.text.toString().trim(),
-                    "email",
-                    "loginFragment"
-                )
-                findNavController().navigate(action)
-            } else {
-                findNavController().navigate(
-                    LoginFragmentDirections.actionLoginFragmentToRegisterFragment(
-                        binding.etEmail.text.toString().trim()
-                    )
-                )
+        binding.tvForgotPassword.setOnClickListener {
+            findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+        }
+
+        observeLoginFlow()
+    }
+
+    private fun handleLoginClick() {
+        val email = binding.etEmail.text.toString().trim()
+        val password = binding.etPassword.text.toString()
+        val emailValidation = viewModel.validateEmail(email)
+        if (emailValidation is com.finance.savvycents.utilities.Validator.Error) {
+            Toast.makeText(context, emailValidation.errorMsg, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val passwordValidation = viewModel.validatePassword(password)
+        if (passwordValidation is com.finance.savvycents.utilities.Validator.Error) {
+            Toast.makeText(context, passwordValidation.errorMsg, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // Check email sign-in methods
+        showLoading(true)
+        viewModel.checkEmail(email)
+        viewModel.emailSignInMethods.observe(viewLifecycleOwner) { methods ->
+            showLoading(false)
+            if (methods.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Email not registered. Please sign up.", Toast.LENGTH_SHORT).show()
+            } else if (methods.contains("google.com")) {
+                Toast.makeText(requireContext(), "This email is registered via Google Sign-In. Please use Google login.", Toast.LENGTH_LONG).show()
+            } else if (methods.contains("password")) {
+                viewModel.loginUser(email, password)
             }
         }
+    }
+
+    private fun setupGoogleSignIn() {
         oneTapClient = Identity.getSignInClient(requireContext())
 
         signInRequest = BeginSignInRequest.builder()
@@ -109,222 +128,160 @@ class LoginFragment : Fragment() {
                     .setFilterByAuthorizedAccounts(false)
                     .build()
             )
-            // Automatically sign in when exactly one credential is retrieved.
             .setAutoSelectEnabled(true)
             .build()
 
-        val activityResultLauncher: ActivityResultLauncher<IntentSenderRequest> =
-            registerForActivityResult(
-                ActivityResultContracts.StartIntentSenderForResult()
-            ) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    try {
-                        val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
-                        val idToken = credential.googleIdToken
-                        val username = credential.id
-                        if (idToken != null) {
-                            auth.fetchSignInMethodsForEmail(username)
-                                .addOnCompleteListener { fetchTask ->
-                                    if (fetchTask.isSuccessful) {
-                                        val signInMethods = fetchTask.result?.signInMethods
-                                        if (!signInMethods.isNullOrEmpty()) {
-                                            signInWithGoogleCredentials(credential)
-                                        } else {
-                                            createUserWithGoogleCredential(credential)
-                                        }
-                                    } else {
-                                        // Handle fetch error
-                                        Toast.makeText(
-                                            context,
-                                            "Error fetching sign-in methods",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+        googleSignInLauncher = registerForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult()
+        ) { result ->
+            hideLoadingIndicator() // Hide progress bar as soon as result is received
+            if (result.resultCode == Activity.RESULT_OK) {
+                try {
+                    val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
+                    val idToken = credential.googleIdToken
+                    if (idToken != null) {
+                        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+                        auth.signInWithCredential(firebaseCredential)
+                            .addOnCompleteListener(requireActivity()) { task ->
+                                if (task.isSuccessful) {
+                                    val user = auth.currentUser
+                                    if (user != null) {
+                                        viewModel.checkUserExists(user.uid)
+                                            .observe(viewLifecycleOwner) { exists ->
+                                                if (exists) {
+                                                    Intent(
+                                                        activity,
+                                                        HomeActivity::class.java
+                                                    ).also {
+                                                        startActivity(it)
+                                                        requireActivity().finish()
+                                                    }
+                                                } else {
+                                                    findNavController().navigate(R.id.registerFragment)
+                                                }
+                                            }
                                     }
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Google sign in failed: ${task.exception?.message}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
-
-                        } else {
-                            Toast.makeText(context, "Error: ID token is null", Toast.LENGTH_LONG)
-                                .show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
+                            }
                     }
-
-                } else {
-                    Toast.makeText(context, "Signup failed", Toast.LENGTH_LONG).show()
-                }
-            }
-
-
-        binding.signupGoogle.setOnClickListener {
-            showLoadingIndicator()
-            oneTapClient.beginSignIn(signInRequest)
-                .addOnSuccessListener(requireActivity()) { result ->
-                    try {
-                        val intentSenderRequest =
-                            IntentSenderRequest.Builder(result.pendingIntent.intentSender)
-                                .build()
-
-                        activityResultLauncher.launch(intentSenderRequest)
-                    } catch (e: Exception) {
-                        Toast.makeText(context, e.localizedMessage, Toast.LENGTH_LONG).show()
-                    }
-                }
-                .addOnFailureListener(requireActivity()) { e ->
-                    Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
-                }
-
-        }
-
-        binding.tvForgotPass.setOnClickListener {
-            findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
-        }
-    }
-
-    private fun createUserWithGoogleCredential(credential: SignInCredential) {
-        val idToken = credential.googleIdToken
-        if (idToken != null) {
-            val authCredential = GoogleAuthProvider.getCredential(idToken, null)
-            auth.signInWithCredential(authCredential)
-                .addOnCompleteListener(requireActivity()) { authTask ->
-                    if (authTask.isSuccessful) {
-                        hideLoadingIndicator()
-                        auth.currentUser?.let { user ->
-                            viewModel.saveLoginCredential(
-                                User(
-                                    isLoggedIn = true,
-                                    userId = user.uid,
-                                    email = user.email,
-                                    name = user.displayName!!,
-                                    phone = ""
-                                )
-                            )
-                            saveUserData(requireContext(), user.displayName!!, user.email!!, "")
-                        }
-
-                        showSuccessFeedback()
-                        val intent = Intent(activity, HomeActivity::class.java)
-                        startActivity(intent)
-                    } else {
-
-                        Toast.makeText(
-                            context,
-                            "Error creating user: ${authTask.exception?.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                }
-        } else {
-            Toast.makeText(context, "Error: ID token is null", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun signInWithGoogleCredentials(credential: SignInCredential) {
-        val auth = Firebase.auth
-        val idToken = credential.googleIdToken
-        val authCredential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(authCredential)
-            .addOnCompleteListener(requireActivity()) { authTask ->
-                if (authTask.isSuccessful) {
-                    auth.currentUser?.let { user ->
-                        viewModel.saveLoginCredential(
-                            User(
-                                isLoggedIn = true,
-                                email = user.email,
-                                userId = user.uid,
-                                name = user.displayName!!,
-                                phone = "123"
-                            )
-                        )
-
-                    }
-                    showSuccessFeedback()
-                    val intent = Intent(activity, HomeActivity::class.java)
-                    startActivity(intent)
-                } else {
+                } catch (e: Exception) {
                     Toast.makeText(
                         context,
-                        "Error logging in: ${authTask.exception?.message}",
+                        "Google sign in failed: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
                 }
             }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        _binding = null
-    }
-
-
-    private fun showLoadingIndicator() {
-        isLoading = true
-        // Show a loading indicator (e.g., progress bar)
-        binding.progressBar.visibility = View.VISIBLE
-        binding.btLogin.visibility = View.INVISIBLE
-    }
-
-    private fun hideLoadingIndicator() {
-        isLoading = false
-        // Hide the loading indicator (e.g., progress bar)
-        binding.progressBar.visibility = View.GONE
-        binding.btLogin.visibility = View.VISIBLE
-    }
-
-    private fun showSuccessFeedback() {
-        // Show a success message to the user
-        Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun setObservers() {
-        if (isUserLoggedIn()) {
-            lifecycleScope.launch {
-
-                viewModel.loginFlow.collect { it ->
-                    val result = it ?: return@collect
-
-                    hideLoadingIndicator()
-
-                    when (result) {
-                        is Resource.Error -> {
-                            hideLoadingIndicator()
-                            val errorMessage = result.message ?: "An error occurred"
-                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                        }
-
-                        is Resource.Loading -> {
-                            showLoadingIndicator()
-                        }
-
-                        is Resource.Success -> {
-                            result.data?.let { user ->
-                                viewModel.saveLoginCredential(
-                                    User(
-                                        isLoggedIn = true,
-                                        email = user.email,
-                                        userId = user.userId,
-                                        name = user.name,
-                                        phone = user.phone
-                                    )
-                                )
-                                hideLoadingIndicator()
-                                showSuccessFeedback()
-                                val intent = Intent(activity, HomeActivity::class.java)
-                                startActivity(intent)
-                            }
-
-                        }
-                    }
-                }
-            }
-        } else {
-
         }
     }
 
-    private fun isEmail(input: String): Boolean {
-        // Check if the input looks like an email address
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(input).matches()
+    private fun beginGoogleSignIn() {
+        showLoading(true) // Show progress bar immediately when Google sign-in starts
+        oneTapClient.beginSignIn(signInRequest)
+            .addOnSuccessListener { result ->
+                try {
+                    val intentSenderRequest =
+                        IntentSenderRequest.Builder(result.pendingIntent).build()
+                    googleSignInLauncher.launch(intentSenderRequest)
+                } catch (e: Exception) {
+                    hideLoadingIndicator() // Hide if failed
+                    Toast.makeText(
+                        context,
+                        "Google sign in failed: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+            .addOnFailureListener { e ->
+                hideLoadingIndicator() // Hide if failed
+                Toast.makeText(
+                    context,
+                    "Google sign in failed: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+    }
+
+    private fun showLoadingIndicator() {
+        binding.btLogin.isEnabled = false
+        binding.ivGoogle.isEnabled = false
+    }
+
+    private fun hideLoadingIndicator() {
+        binding.btLogin.isEnabled = true
+        binding.ivGoogle.isEnabled = true
+    }
+
+    private fun showLoading(show: Boolean) {
+        binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
+        binding.btLogin.isEnabled = !show
+        binding.etEmail.isEnabled = !show
+        binding.etPassword.isEnabled = !show
+    }
+
+    private fun observeLoginFlow() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.loginFlow.collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        showLoading(true)
+                    }
+                    is Resource.Success -> {
+                        val user = FirebaseAuth.getInstance().currentUser
+                        if (user != null && !user.isEmailVerified) {
+                            FirebaseAuth.getInstance().signOut()
+                            showLoading(false)
+                            showEmailNotVerifiedDialog(user)
+                        } else {
+                            showLoading(false)
+                            val intent = Intent(requireContext(), HomeActivity::class.java)
+                            startActivity(intent)
+                            requireActivity().finish()
+                        }
+                    }
+                    is Resource.Error -> {
+                        showLoading(false)
+                        val message = result.message
+                        val displayMsg = if (message != null && message.contains("The password is invalid or user doesn't have a password")) {
+                            "The password is invalid or user doesn't exist"
+                        } else {
+                            message ?: "Login failed"
+                        }
+                        Toast.makeText(requireContext(), displayMsg, Toast.LENGTH_SHORT).show()
+                    }
+                    null -> {
+                        showLoading(false)
+                    }
+                    is Resource.Idle<*> -> { /* No-op or reset UI if needed */ }
+                }
+            }
+        }
+    }
+
+    private fun showEmailNotVerifiedDialog(user: com.google.firebase.auth.FirebaseUser) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Email Not Verified")
+            .setMessage("Please verify your email before logging in.")
+            .setCancelable(false)
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNegativeButton("Resend Email") { dialog, _ ->
+                user.sendEmailVerification()
+                Toast.makeText(requireContext(), "Verification email sent!", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -6,16 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".ui.screens.HomeActivity">
 
-
-    <FrameLayout
-        android:id="@+id/frame_layout"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:defaultNavHost="true"
+        app:layout_constraintBottom_toTopOf="@id/coordinatorLayout"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/coordinatorLayout"/>
-
+        app:navGraph="@navigation/nav_graph" />
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
@@ -37,10 +38,10 @@
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottomNavigationView"
                 android:layout_width="match_parent"
-                app:labelVisibilityMode="labeled"
                 android:layout_height="match_parent"
                 android:background="@android:color/transparent"
                 android:elevation="0dp"
+                app:labelVisibilityMode="labeled"
                 app:menu="@menu/bottom_nav" />
 
         </com.google.android.material.bottomappbar.BottomAppBar>
