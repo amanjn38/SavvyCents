@@ -3,20 +3,20 @@ package com.finance.savvycents.ui.screens
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.SearchView
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.finance.savvycents.databinding.FragmentAddFriendsBinding
 import com.finance.savvycents.ui.adapters.ContactAdapter
+import com.finance.savvycents.ui.viewmodels.ContactViewModel
 import com.finance.savvycents.utilities.Resource
-import com.finance.savvycents.viewmodels.ContactViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -89,6 +89,10 @@ class AddFriendsFragment : Fragment() {
 
                 is Resource.Loading -> {
                     // Handle loading state
+                }
+
+                is Resource.Idle -> {
+                    // Handle idle state
                 }
             }
         }

@@ -1,112 +1,110 @@
 package com.finance.savvycents.ui.screens
 
-import android.app.AlertDialog
-import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.finance.savvycents.R
 import com.finance.savvycents.databinding.FragmentProfileBinding
-import com.finance.savvycents.viewmodels.LoginViewModel
-import com.google.firebase.auth.FirebaseAuth
+import com.finance.savvycents.utilities.Resource
+import com.finance.savvycents.ui.viewmodels.ProfileViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
-    private var _binding: FragmentProfileBinding? = null
-    private val binding get() = _binding!!
-    private lateinit var auth: FirebaseAuth
-    private val viewModel: LoginViewModel by viewModels()
-    private var source: String? = null
+    private lateinit var binding: FragmentProfileBinding
+    private val viewModel: ProfileViewModel by viewModels()
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        auth = FirebaseAuth.getInstance()
-        source = arguments?.getString("source")
+        setupUserData()
+        setupListeners()
+        observeLogout()
+    }
 
-        val currentUser = auth.currentUser
-        currentUser?.let {
-            val name = currentUser.displayName
-            val email = currentUser.email
-            binding.tvName.text = name
-            binding.tvEmail.text = email
+    private fun setupUserData() {
+        viewModel.userData.observe(viewLifecycleOwner) { resource: com.finance.savvycents.utilities.Resource<com.finance.savvycents.models.User> ->
+            when (resource) {
+                is Resource.Loading -> showLoadingIndicator()
+                is Resource.Success -> {
+                    hideLoadingIndicator()
+                    val user = resource.data
+                    if (user != null) {
+                        binding.tvName.text = user.name
+                        binding.tvEmail.text = user.email
+                        binding.tvPhone.text = user.phone
+                    }
+                }
+                is Resource.Error -> {
+                    hideLoadingIndicator()
+                    Toast.makeText(context, resource.message, Toast.LENGTH_LONG).show()
+                }
+                is Resource.Idle -> {
+                    // handle idle
+                }
+            }
         }
+    }
 
+    private fun setupListeners() {
         binding.btLogout.setOnClickListener {
-            showLogoutConfirmationDialog()
+            viewModel.logout()
         }
 
         binding.tvBack.setOnClickListener {
-//            if (source.equals("FragmentSearch")) {
-//                findNavController().navigate(R.id.action_fragmentProfile_to_fragmentSearch)
-//            } else if (source.equals("FragmentResult")) {
-//                findNavController().navigate(R.id.action_fragmentProfile_to_fragmentResult)
-//            }
             findNavController().navigateUp()
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        _binding = null
-    }
-
-
-    private fun showLogoutConfirmationDialog() {
-        val sharedPreferences =
-            requireContext().getSharedPreferences("UserLoggedInStatus", Context.MODE_PRIVATE)
-
-        // Create an AlertDialog.Builder instance
-        val builder = AlertDialog.Builder(requireContext())
-
-        // Set the dialog title and message
-        builder.setTitle("Logout")
-            .setMessage("Are you sure you want to logout?")
-
-        // Set the positive button and its click listener
-        builder.setPositiveButton("Yes") { _: DialogInterface, _: Int ->
-            // Clear the shared preference
-            if (sharedPreferences.contains("isLoggedIn")) {
-                sharedPreferences.edit().remove("isLoggedIn").apply()
+    private fun observeLogout() {
+        lifecycleScope.launch {
+            viewModel.logoutFlow.collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        showLoadingIndicator()
+                    }
+                    is Resource.Success -> {
+                        hideLoadingIndicator()
+                        navigateToLogin()
+                    }
+                    is Resource.Error -> {
+                        hideLoadingIndicator()
+                        Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                    }
+                    is Resource.Idle -> {
+                        // handle idle
+                    }
+                }
             }
-            viewModel.logout()
-            val intent = Intent(activity, MainActivity::class.java)
-            startActivity(intent)
-            Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()
         }
-
-        // Set the negative button and its click listener
-        builder.setNegativeButton("No") { dialogInterface: DialogInterface, _: Int ->
-            // Dismiss the dialog if the user chooses not to logout
-            dialogInterface.dismiss()
-        }
-
-        // Create and show the AlertDialog
-        val alertDialog: AlertDialog = builder.create()
-        alertDialog.show()
-
     }
 
+    private fun navigateToLogin() {
+        Intent(activity, MainActivity::class.java).also {
+            startActivity(it)
+            requireActivity().finish()
+        }
+    }
+
+    private fun showLoadingIndicator() {
+        binding.progressBar.visibility = View.VISIBLE
+        binding.btLogout.isEnabled = false
+    }
+
+    private fun hideLoadingIndicator() {
+        binding.progressBar.visibility = View.GONE
+        binding.btLogout.isEnabled = true
+    }
 }

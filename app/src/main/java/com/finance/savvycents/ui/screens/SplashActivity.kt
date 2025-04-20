@@ -10,7 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.viewModels
 import com.finance.savvycents.R
-import com.finance.savvycents.viewmodels.LoginViewModel
+import com.finance.savvycents.ui.viewmodels.LoginViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @SuppressLint("CustomSplashScreen")

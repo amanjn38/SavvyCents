@@ -18,8 +18,6 @@ import com.finance.savvycents.repository.ContactRepository
 import com.finance.savvycents.repository.ContactRepositoryImpl
 import com.finance.savvycents.repository.TransactionRepository
 import com.finance.savvycents.repository.TransactionRepositoryImpl
-import com.finance.savvycents.viewmodels.CategoryViewModel
-import com.finance.savvycents.viewmodels.ContactViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -84,12 +82,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideContactViewModel(useCase: ContactUseCase): ContactViewModel {
-        return ContactViewModel(useCase)
-    }
-
-    @Provides
-    @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): SavvyCentsDatabase {
         return Room.databaseBuilder(
             context,
@@ -117,11 +109,5 @@ object AppModule {
         categoryDao: CategoryDao
     ): CategoryRepository {
         return CategoryRepositoryImpl(categoryDao)
-    }
-
-    @Provides
-    @Singleton
-    fun provideCategoryViewModel(repository: CategoryRepository): CategoryViewModel {
-        return CategoryViewModel(repository)
     }
 }

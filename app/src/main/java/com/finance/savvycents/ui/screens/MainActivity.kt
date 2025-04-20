@@ -1,6 +1,7 @@
 package com.finance.savvycents.ui.screens
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
@@ -41,8 +42,14 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
-        navController.navigate(R.id.loginFragment)
+        // If user is already logged in, go to HomeActivity and finish MainActivity
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            startActivity(Intent(this, HomeActivity::class.java))
+            finish()
+            return
+        }
 
+        // No need to navigate to loginFragment explicitly; nav_auth.xml handles startDestination
 
         if (FirebaseAuth.getInstance().currentUser != null) {
             FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
@@ -53,23 +60,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-//        if (!isDefaultSmsApp(this)) {
-//            // Prompt the user to set your app as the default SMS app
-////            SmsUtils.openDefaultSmsSettings(this)
-//        }
-//
-//        // Request SMS permission if not granted
-//        SmsUtils.requestSmsPermission(this) { granted ->
-//            if (granted) {
-//                // Register the SMS receiver
-//            } else {
-//                // Handle permission denied
-//                Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-
         if (checkSelfPermission(Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
-
             SmsUtils.requestSmsPermission(this) { granted ->
                 if (granted) {
                     // Register the SMS receiver
@@ -81,9 +72,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateToken(token: String?) {
-        val ref = FirebaseDatabase.getInstance().getReference("Tokens")
-        val mToken = Token(token)
-        ref.child(FirebaseAuth.getInstance().currentUser!!.uid).setValue(mToken)
+    private fun updateToken(token: String) {
+        val user = FirebaseAuth.getInstance().currentUser
+        user?.let {
+            val database = FirebaseDatabase.getInstance().getReference("Tokens")
+            val tokenObj = Token(token)
+            database.child(user.uid).setValue(tokenObj)
+        }
     }
 }
