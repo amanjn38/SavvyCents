@@ -57,7 +57,7 @@ class RemoteContactDataSource @Inject constructor(private val context: Context) 
                         val phoneNumberColumnIndex = phoneDataCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                         val phoneNumber = if (phoneNumberColumnIndex >= 0) phoneDataCursor.getString(phoneNumberColumnIndex) else ""
 
-                        val contactEntity = ContactEntity(contactId.toInt(), contactName, phoneNumber)
+                        val contactEntity = ContactEntity(contactId.toInt(), contactName, phoneNumber, "")
                         contacts.add(contactEntity)
                     }
                 }

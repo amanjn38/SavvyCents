@@ -10,6 +10,7 @@ import com.finance.savvycents.contact.LocalContactDataSource
 import com.finance.savvycents.contact.RemoteContactDataSource
 import com.finance.savvycents.dao.CategoryDao
 import com.finance.savvycents.dao.ContactDao
+import com.finance.savvycents.dao.FriendDao
 import com.finance.savvycents.repository.AuthRepository
 import com.finance.savvycents.repository.AuthRepositoryImpl
 import com.finance.savvycents.repository.CategoryRepository
@@ -94,7 +95,6 @@ object AppModule {
     @Singleton
     fun provideContactDao(appDatabase: SavvyCentsDatabase): ContactDao {
         return appDatabase.contactDao()
-
     }
 
     @Provides
@@ -109,5 +109,16 @@ object AppModule {
         categoryDao: CategoryDao
     ): CategoryRepository {
         return CategoryRepositoryImpl(categoryDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCategoryViewModel(repository: CategoryRepository): CategoryViewModel {
+        return CategoryViewModel(repository)
+    }
+    @Provides
+    @Singleton
+    fun provideFriendDao(appDatabase: SavvyCentsDatabase): FriendDao {
+        return appDatabase.friendDao()
     }
 }

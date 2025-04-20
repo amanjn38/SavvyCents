@@ -63,7 +63,7 @@ class AddFriendsFragment : Fragment() {
                     val layoutManager = LinearLayoutManager(context)
                     binding.recyclerView.layoutManager = layoutManager
 
-                    adapter = contacts?.let { ContactAdapter(it) }!!
+                    adapter = contacts?.let { ContactAdapter(it, requireContext(), this) }!!
                     binding.recyclerView.adapter = adapter
 
                     binding.searchView.setOnQueryTextListener(object :
@@ -138,24 +138,7 @@ class AddFriendsFragment : Fragment() {
     }
 
     private fun loadContacts() {
-        System.out.println("testingContact4")
-
         viewModel.loadContacts()
     }
 
-//    private fun setupSearch() {
-//        // Set up the listener
-//        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?): Boolean {
-//                // Handle query submission if needed
-//                return false
-//            }
-//
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                // Filter the adapter when the text changes
-//                adapter.filter.filter(newText)
-//                return true
-//            }
-//        })
-//    }
 }

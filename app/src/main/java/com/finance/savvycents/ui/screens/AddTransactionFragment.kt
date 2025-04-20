@@ -53,6 +53,7 @@ class AddTransactionFragment : Fragment() {
                     adapter.submitList(resource.data)
                 }
 
+
                 is Resource.Error -> {
                     binding.progressBar.visibility = View.GONE
                     binding.recyclerView.visibility = View.GONE
