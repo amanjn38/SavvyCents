@@ -23,4 +23,28 @@ class ContactViewModel @Inject constructor(private val contactUseCase: ContactUs
             _contacts.value = contactUseCase.getContacts()
         }
     }
+
+    fun checkAndAddFriend(contact: ContactEntity) {
+        viewModelScope.launch {
+            val isRegistered = contactUseCase.isUserRegistered(contact.email, contact.phoneNumber)
+            if (isRegistered) {
+                // Send friend request: add to Firestore under friend_requests
+                val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                val request = hashMapOf(
+                    "from" to currentUserId,
+                    "toEmail" to contact.email,
+                    "toPhone" to contact.phoneNumber,
+                    "status" to "pending",
+                    "timestamp" to com.google.firebase.Timestamp.now()
+                )
+                db.collection("friend_requests").add(request)
+            } else {
+                // Add as local friend and mark as inviteable
+                // Here you would insert into Room or local list
+                // For demonstration, show a toast or log
+                // TODO: Implement local friend persistence
+            }
+        }
+    }
 }

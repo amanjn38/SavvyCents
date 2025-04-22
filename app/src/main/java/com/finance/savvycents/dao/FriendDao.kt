@@ -11,6 +11,6 @@ interface FriendDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFriend(friend: FriendEntity)
 
-    @Query("SELECT * FROM friends where id = :userId")
-    suspend fun getFriends(userId: String): List<FriendEntity>
+    @Query("SELECT * FROM friends")
+    suspend fun getAllFriends(): List<FriendEntity>
 }

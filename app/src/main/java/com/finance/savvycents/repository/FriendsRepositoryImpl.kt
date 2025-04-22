@@ -43,12 +43,14 @@ class FriendsRepositoryImpl(
             val currentUser = auth.currentUser
 
             if (currentUser != null) {
-                // Add friend to Firebase Firestore
                 val friendMap = mapOf(
                     "id" to friend.id,
-                    "name" to friend.friendName,
-                    "phoneNumber" to friend.friendPhoneNumber,
-                    "email" to friend.friendEmail
+                    "name" to friend.name,
+                    "phoneNumber" to friend.phoneNumber,
+                    "email" to friend.email,
+                    "isRegisteredUser" to friend.isRegisteredUser,
+                    "inviteSent" to friend.inviteSent,
+                    "ownerUserId" to currentUser.uid
                 )
 
                 FirebaseFirestore.getInstance().collection("users")
@@ -63,9 +65,11 @@ class FriendsRepositoryImpl(
             friendDao.insertFriend(
                 FriendEntity(
                     id = friend.id,
-                    friendName = friend.friendName,
-                    friendPhoneNumber = friend.friendPhoneNumber,
-                    friendEmail = friend.friendEmail
+                    name = friend.name,
+                    phoneNumber = friend.phoneNumber,
+                    email = friend.email,
+                    isRegisteredUser = friend.isRegisteredUser,
+                    inviteSent = friend.inviteSent
                 )
             )
         }
@@ -74,14 +78,13 @@ class FriendsRepositoryImpl(
     override suspend fun getFriends(userId: String) {
         withContext(Dispatchers.IO) {
             try {
-                // Retrieve friends from local Room database
-                val friendsFromDatabase = friendDao.getFriends(userId)
-
-                // Update LiveData with the list of friends
-                friends.postValue(friendsFromDatabase)
             } catch (e: Exception) {
                 // Handle exceptions
             }
         }
+    }
+
+    suspend fun getAllFriends() : List<FriendEntity> {
+        return friendDao.getAllFriends()
     }
 }

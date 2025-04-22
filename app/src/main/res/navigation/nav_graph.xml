@@ -45,7 +45,30 @@
         android:id="@+id/addFriendsFragment"
         android:name="com.finance.savvycents.ui.screens.AddFriendsFragment"
         android:label="Add Friends"
-        tools:layout="@layout/fragment_add_friends" />
+        tools:layout="@layout/fragment_add_friends">
+        <action
+            android:id="@+id/action_addFriendsFragment_to_verifyContactFragment"
+            app:destination="@id/verifyContactFragment" />
+        <action
+            android:id="@+id/action_addFriendsFragment_to_reviewSelectedContactsFragment"
+            app:destination="@id/reviewSelectedContactsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/reviewSelectedContactsFragment"
+        android:name="com.finance.savvycents.ui.screens.ReviewSelectedContactsFragment"
+        android:label="Review Selected Contacts"
+        tools:layout="@layout/fragment_review_selected_contacts" />
+
+    <fragment
+        android:id="@+id/verifyContactFragment"
+        android:name="com.finance.savvycents.ui.screens.VerifyContactFragment"
+        android:label="Verify Contact"
+        tools:layout="@layout/fragment_verify_contact">
+        <argument
+            android:name="contact"
+            app:argType="com.finance.savvycents.models.ContactEntity" />
+    </fragment>
 
     <fragment
         android:id="@+id/loginFragment"
@@ -71,5 +94,9 @@
         android:name="com.finance.savvycents.ui.screens.ForgotPasswordFragment"
         android:label="Forgot Password"
         tools:layout="@layout/fragment_forgot_password" />
+    <fragment
+        android:id="@+id/friendsFragment"
+        android:name="com.finance.savvycents.ui.screens.FriendsFragment"
+        android:label="FriendsFragment" />
 
 </navigation>

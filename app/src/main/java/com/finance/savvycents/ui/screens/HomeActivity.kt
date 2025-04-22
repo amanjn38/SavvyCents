@@ -43,9 +43,9 @@ class HomeActivity : AppCompatActivity() {
         }
         binding.bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.home -> navController.navigate(R.id.homeFragment)
+                R.id.home -> navController.navigate(R.id.friendsFragment)
                 R.id.analytics -> navController.navigate(R.id.analyticsFragment)
-                R.id.cards -> navController.navigate(R.id.cardAndAccountFragment)
+                R.id.cards -> navController.navigate(R.id.addFriendsFragment)
                 R.id.profile -> navController.navigate(R.id.profileFragment)
             }
             true

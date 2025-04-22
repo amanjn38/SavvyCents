@@ -6,8 +6,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "friends")
 data class FriendEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val friendName: String,
-    val friendPhoneNumber: String,
-    val friendEmail: String
+    val id: Int = 0,
+    val name: String,
+    val phoneNumber: String,
+    val email: String,
+    val isRegisteredUser: Boolean = false,
+    val inviteSent: Boolean = false
 )

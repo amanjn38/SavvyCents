@@ -1,6 +1,7 @@
 package com.finance.savvycents.ui.screens
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,8 +13,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.finance.savvycents.R
 import com.finance.savvycents.databinding.FragmentAddFriendsBinding
+import com.finance.savvycents.models.ContactEntity
 import com.finance.savvycents.ui.adapters.ContactAdapter
 import com.finance.savvycents.ui.viewmodels.ContactViewModel
 import com.finance.savvycents.utilities.Resource
@@ -57,42 +61,52 @@ class AddFriendsFragment : Fragment() {
         viewModel.contacts.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
-                    // Update UI with the retrieved contacts
-                    // You can use RecyclerView or any other UI component
+                    binding.progressBar.visibility = View.GONE
                     val contacts = resource.data
                     val layoutManager = LinearLayoutManager(context)
                     binding.recyclerView.layoutManager = layoutManager
-
                     adapter = contacts?.let { ContactAdapter(it, requireContext(), this) }!!
                     binding.recyclerView.adapter = adapter
-
                     binding.searchView.setOnQueryTextListener(object :
                         SearchView.OnQueryTextListener {
                         override fun onQueryTextSubmit(query: String?): Boolean {
-                            return false
+                            adapter.filter(query)
+                            return true
                         }
 
                         override fun onQueryTextChange(newText: String?): Boolean {
-                            // Cancel the previous search job if it's still running
                             adapter.filter(newText)
                             return true
                         }
                     })
-
+                    // Show Next button
+                    binding.nextButton.visibility = View.VISIBLE
+                    binding.nextButton.setOnClickListener {
+                        val selected = adapter.getSelectedContacts()
+                        if (selected.isEmpty()) {
+                            Toast.makeText(requireContext(), "Select at least one contact", Toast.LENGTH_SHORT).show()
+                        } else {
+                            val bundle = Bundle().apply {
+                                putParcelableArrayList("selectedContacts", ArrayList(selected))
+                            }
+                            findNavController().navigate(R.id.action_addFriendsFragment_to_reviewSelectedContactsFragment, bundle)
+                        }
+                    }
                 }
 
                 is Resource.Error -> {
+                    binding.progressBar.visibility = View.GONE
                     // Handle error state
                     val errorMessage = resource.message
                     Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
                 }
 
                 is Resource.Loading -> {
-                    // Handle loading state
+                    binding.progressBar.visibility = View.VISIBLE
                 }
 
                 is Resource.Idle -> {
-                    // Handle idle state
+                    binding.progressBar.visibility = View.GONE
                 }
             }
         }
@@ -141,4 +155,11 @@ class AddFriendsFragment : Fragment() {
         viewModel.loadContacts()
     }
 
+    private fun sendInvite(contact: ContactEntity) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        val message = "Hey! Join me on SavvyCents to manage expenses together. Download now: <app_link>"
+        intent.putExtra(Intent.EXTRA_TEXT, message)
+        startActivity(Intent.createChooser(intent, "Invite via"))
+    }
 }

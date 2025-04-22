@@ -17,6 +17,8 @@ import com.finance.savvycents.repository.CategoryRepository
 import com.finance.savvycents.repository.CategoryRepositoryImpl
 import com.finance.savvycents.repository.ContactRepository
 import com.finance.savvycents.repository.ContactRepositoryImpl
+import com.finance.savvycents.repository.FriendsRepository
+import com.finance.savvycents.repository.FriendsRepositoryImpl
 import com.finance.savvycents.repository.TransactionRepository
 import com.finance.savvycents.repository.TransactionRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
@@ -113,12 +115,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCategoryViewModel(repository: CategoryRepository): CategoryViewModel {
-        return CategoryViewModel(repository)
-    }
-    @Provides
-    @Singleton
     fun provideFriendDao(appDatabase: SavvyCentsDatabase): FriendDao {
         return appDatabase.friendDao()
+    }
+
+    @Provides
+    fun provideFriendsRepository(friendDao: FriendDao): FriendsRepository {
+        return FriendsRepositoryImpl(friendDao)
     }
 }

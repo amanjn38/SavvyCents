@@ -10,7 +10,7 @@ import com.finance.savvycents.models.category.CategoryEntity
 import com.finance.savvycents.models.category.SubCategoryEntity
 import com.finance.savvycents.models.FriendEntity
 
-@Database(entities = [ContactEntity::class, CategoryEntity::class, SubCategoryEntity::class], version = 1, exportSchema = false)
+@Database(entities = [ContactEntity::class, CategoryEntity::class, SubCategoryEntity::class, FriendEntity::class], version = 2, exportSchema = false)
 abstract class SavvyCentsDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
     abstract fun categoryDao(): CategoryDao

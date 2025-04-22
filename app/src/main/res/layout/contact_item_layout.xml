@@ -35,4 +35,28 @@
         app:layout_constraintBottom_toBottomOf="@id/imageInitials"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/imageInitials" />
+
+    <!-- Remove Add Friend and Invite buttons -->
+    <!-- <TextView
+        android:id="@+id/addFriendButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Friend"
+        android:background="@drawable/btn_enable_disable_selector"
+        android:textColor="@color/primaryColor"
+        android:padding="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageInitials"/>
+    <TextView
+        android:id="@+id/inviteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Invite"
+        android:background="@drawable/btn_enable_disable_selector"
+        android:textColor="@color/primaryColor"
+        android:padding="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toEndOf="@id/addFriendButton"
+        app:layout_constraintTop_toBottomOf="@id/imageInitials"/> -->
 </androidx.constraintlayout.widget.ConstraintLayout>

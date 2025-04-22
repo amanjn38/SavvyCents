@@ -31,10 +31,9 @@ class TransactionViewModel @Inject constructor(private val repository: Transacti
         _transactions.value = Resource.Loading()
         System.out.println("testing111" + userId)
 
-        repository.getTransactions("BFIUUFvZcIVXzzlwvuQl5l9lXlJ2")
+        repository.getTransactions(userId)
             .collect { result ->
                 _transactions.value = result
             }
     }
 }
-

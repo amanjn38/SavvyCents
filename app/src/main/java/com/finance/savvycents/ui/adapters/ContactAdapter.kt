@@ -15,11 +15,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import com.finance.savvycents.R
 import com.finance.savvycents.models.ContactEntity
-import com.finance.savvycents.ui.screens.AddFriendsFragmentDirections
 import java.util.Locale
 
 
@@ -30,6 +28,8 @@ class ContactAdapter(
 ) :
     RecyclerView.Adapter<ContactAdapter.ContactViewHolder>() {
     private var filteredContacts: List<ContactEntity> = contacts
+
+    var selectedContacts = mutableSetOf<ContactEntity>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -46,21 +46,11 @@ class ContactAdapter(
         // Set contact name
         holder.textName.text = contact.name
 
-        // Set checkbox status
-//        holder.checkBox.isChecked = contact.isSelected
-//
-//        // Set click listener for checkbox
-//        holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
-//            // Update contact selection status
-//            contact.isSelected = isChecked
-//        }
-
-        holder.parent.setOnClickListener {
-            val navController = NavHostFragment.findNavController(fragment)
-            val action = AddFriendsFragmentDirections.actionAddFriendsFragmentToVerifyContactFragment(contact)
-            navController.navigate(action)
+        holder.checkBox.isChecked = selectedContacts.contains(contact)
+        holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) selectedContacts.add(contact)
+            else selectedContacts.remove(contact)
         }
-
     }
 
     private fun getCircularDrawable(name: String): BitmapDrawable {
@@ -104,13 +94,18 @@ class ContactAdapter(
     }
 
     fun filter(query: String?) {
-        filteredContacts = listOf()
-        query?.let { searchText ->
-            filteredContacts = contacts.filter {
-                it.name.lowercase(Locale.getDefault())
-                    .contains(searchText.lowercase(Locale.getDefault()))
+        filteredContacts = if (query.isNullOrBlank()) {
+            contacts
+        } else {
+            val searchText = query.lowercase(Locale.getDefault())
+            contacts.filter {
+                it.name.lowercase(Locale.getDefault()).contains(searchText) ||
+                it.email.lowercase(Locale.getDefault()).contains(searchText) ||
+                it.phoneNumber.lowercase(Locale.getDefault()).contains(searchText)
             }
-            notifyDataSetChanged()
         }
+        notifyDataSetChanged()
     }
+
+    fun getSelectedContacts(): List<ContactEntity> = selectedContacts.toList()
 }
